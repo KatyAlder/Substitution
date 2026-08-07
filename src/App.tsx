@@ -1,7 +1,34 @@
+import { useState } from "react";
 import { CandidatesScreen } from "./screens/CandidatesScreen";
+import { ProfileScreen } from "./screens/ProfileScreen";
+
+type Tab = "candidates" | "profiles";
 
 function App() {
-  return <CandidatesScreen />;
+  const [tab, setTab] = useState<Tab>("candidates");
+
+  return (
+    <>
+      <nav className="tab-nav">
+        <button
+          type="button"
+          className={`tab-nav__item${tab === "candidates" ? " tab-nav__item--active" : ""}`}
+          onClick={() => setTab("candidates")}
+        >
+          Активні заміни
+        </button>
+        <button
+          type="button"
+          className={`tab-nav__item${tab === "profiles" ? " tab-nav__item--active" : ""}`}
+          onClick={() => setTab("profiles")}
+        >
+          Профілі
+        </button>
+      </nav>
+
+      {tab === "candidates" ? <CandidatesScreen /> : <ProfileScreen />}
+    </>
+  );
 }
 
 export default App;

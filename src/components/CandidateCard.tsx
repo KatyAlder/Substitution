@@ -1,13 +1,27 @@
 import { CONSECUTIVE_REFUSALS_THRESHOLD } from "../config/settings";
 import type { RankedCandidate } from "../ranking/rank";
+import type { Attempt, AttemptResult } from "../types/substitution";
 
 interface Props {
   candidate: RankedCandidate;
   labApplicable: boolean;
   labAvailable: boolean;
+  whatsappUrl?: string;
+  latestAttempt?: Attempt;
+  onResult: (result: AttemptResult) => void;
 }
 
-export function CandidateCard({ candidate, labApplicable, labAvailable }: Props) {
+const ATTEMPT_LABELS: Record<AttemptResult, string> = {
+  agreed: "погодився",
+  refused: "відмовився",
+  silent: "не відповів",
+};
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" });
+}
+
+export function CandidateCard({ candidate, labApplicable, labAvailable, whatsappUrl, latestAttempt, onResult }: Props) {
   const { teacher, lessonsToday, substitutionsThisMonth, consecutiveRefusals, inGoldenHour, bonusCount } = candidate;
 
   return (
@@ -44,6 +58,33 @@ export function CandidateCard({ candidate, labApplicable, labAvailable }: Props)
           </div>
         )}
       </dl>
+
+      <div className="candidate-card__actions">
+        {whatsappUrl ? (
+          <a className="btn btn--whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer">
+            WhatsApp
+          </a>
+        ) : (
+          <span className="btn btn--disabled" title="немає номера телефону">
+            WhatsApp
+          </span>
+        )}
+        <button type="button" className="btn btn--agree" onClick={() => onResult("agreed")}>
+          Погодився
+        </button>
+        <button type="button" className="btn btn--refuse" onClick={() => onResult("refused")}>
+          Відмовився
+        </button>
+        <button type="button" className="btn btn--silent" onClick={() => onResult("silent")}>
+          Не відповів
+        </button>
+      </div>
+
+      {latestAttempt && (
+        <div className={`candidate-card__attempt candidate-card__attempt--${latestAttempt.result}`}>
+          {ATTEMPT_LABELS[latestAttempt.result]} о {formatTime(latestAttempt.at)}
+        </div>
+      )}
     </li>
   );
 }

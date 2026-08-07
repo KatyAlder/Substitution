@@ -11,3 +11,8 @@ export const CONSECUTIVE_REFUSALS_THRESHOLD = 3;
 export const TECHNICAL_SUBJECT_ROOMS: Record<string, string[]> = {
   інформатика: ["каб-14"],
 };
+
+/** Посилання-запрошення групового чату (розділ 7 ТЗ) — wa.me групи не підтримує,
+ *  тож для "відкрити чат" потрібне справжнє посилання chat.whatsapp.com/...
+ *  Порожньо, доки не з'явиться реальне у вересні — кнопка ховається сама. */
+export const GROUP_CHAT_INVITE_URL = "";

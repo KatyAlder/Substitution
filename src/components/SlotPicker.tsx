@@ -27,8 +27,8 @@ export function SlotPicker({ substitutions, teachers, bells, selectedId, onSelec
             className={`slot-picker__item${isSelected ? " slot-picker__item--active" : ""}`}
             onClick={() => onSelect(sub.id)}
           >
-            <span className={`slot-picker__mode slot-picker__mode--${sub.mode}`}>
-              {sub.mode === "urgent" ? "термінова" : "завчасна"}
+            <span className={`slot-picker__mode slot-picker__mode--${sub.status === "in-chat" ? "in-chat" : sub.mode}`}>
+              {sub.status === "in-chat" ? "в чаті" : sub.mode === "urgent" ? "термінова" : "завчасна"}
             </span>
             <span className="slot-picker__main">
               {weekdayName(weekday)}, {sub.date} · {bell ? `${bell.start}–${bell.end}` : `урок ${sub.lesson}`} ·{" "}

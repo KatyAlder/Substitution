@@ -71,11 +71,11 @@ function classifyTier(isCurator: boolean, teaches: boolean, present: boolean): T
   return present ? 4 : 6;
 }
 
-function monthOf(dateStr: string): string {
+export function monthOf(dateStr: string): string {
   return dateStr.slice(0, 7); // "YYYY-MM"
 }
 
-const AGREED_CLOSED_VIA = new Set(["call", "chat", "voluntary", "manual"]);
+export const AGREED_CLOSED_VIA = new Set(["call", "chat", "voluntary", "manual"]);
 
 function substitutionsThisMonth(substitutions: Substitution[], teacherId: string, dateStr: string): number {
   const month = monthOf(dateStr);

@@ -45,6 +45,33 @@ body {
   padding: 12px 12px 48px;
 }
 
+/* --- навігація --- */
+
+.tab-nav {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px 0;
+}
+
+.tab-nav__item {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.tab-nav__item--active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
 .screen__title {
   font-size: 1.25rem;
   margin: 4px 0 12px;
@@ -105,6 +132,18 @@ body {
   }
 }
 
+.slot-picker__mode--in-chat {
+  background: var(--bonus-bg);
+  color: #7a6410;
+}
+
+@media (prefers-color-scheme: dark) {
+  .slot-picker__mode--in-chat {
+    background: var(--bonus-bg);
+    color: #e8c547;
+  }
+}
+
 .slot-picker__main {
   font-weight: 600;
 }
@@ -143,6 +182,43 @@ body {
 
 .slot-summary__lab--busy {
   color: var(--warn);
+}
+
+.slot-summary__in-chat {
+  color: var(--good);
+  font-size: 0.9rem;
+}
+
+/* --- панель розсилки завчасних замін --- */
+
+.broadcast-panel {
+  background: var(--bonus-bg);
+  border: 1px solid var(--bonus-border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.broadcast-panel__title {
+  font-size: 0.95rem;
+  margin: 0 0 8px;
+}
+
+.broadcast-panel__text {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  margin: 0 0 10px;
+}
+
+.broadcast-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 /* --- тири --- */
@@ -235,6 +311,205 @@ body {
 
 .value--good {
   color: var(--good);
+}
+
+/* --- дії над кандидатом --- */
+
+.candidate-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.btn {
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn--whatsapp {
+  border-color: var(--good);
+  color: var(--good);
+}
+
+.btn--disabled {
+  color: var(--text-dim);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn--agree {
+  border-color: var(--good);
+}
+
+.btn--refuse,
+.btn--silent {
+  border-color: var(--warn);
+}
+
+.candidate-card__attempt {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.candidate-card__attempt--agreed {
+  color: var(--good);
+}
+
+.candidate-card__attempt--refused {
+  color: var(--warn);
+}
+
+.dead-end-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+/* --- пікер учителя (профілі) --- */
+
+.teacher-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.teacher-picker__item {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: inherit;
+  cursor: pointer;
+}
+
+.teacher-picker__item--active {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* --- картка профілю --- */
+
+.profile-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.profile-card__header {
+  margin-bottom: 12px;
+}
+
+.profile-card__name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.profile-card__phone {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.profile-section {
+  margin-top: 16px;
+}
+
+.profile-section__title {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  margin: 0 0 8px;
+}
+
+.profile-load {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.profile-load td {
+  padding: 4px 6px 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-load__count {
+  text-align: right;
+  font-weight: 600;
+}
+
+.profile-load__total td {
+  border-bottom: none;
+  padding-top: 8px;
+  font-weight: 600;
+}
+
+.profile-week {
+  display: flex;
+  gap: 4px;
+}
+
+.profile-week__day {
+  flex: 1;
+  text-align: center;
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 6px 2px;
+}
+
+.profile-week__label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.profile-week__value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 20px;
+  margin: 0;
+}
+
+.profile-stats dt {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.profile-stats dd {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 @media (min-width: 640px) {

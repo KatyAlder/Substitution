@@ -20,6 +20,12 @@ export function weekdayName(weekday: number): string {
   return WEEKDAY_NAMES[weekday - 1] ?? "?";
 }
 
+export const SHORT_WEEKDAY_NAMES = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"];
+
+export function shortWeekdayName(weekday: number): string {
+  return SHORT_WEEKDAY_NAMES[weekday - 1] ?? "?";
+}
+
 function toMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;
