@@ -1,0 +1,255 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --border: #dde1e6;
+  --text: #1c1f24;
+  --text-dim: #666d76;
+  --accent: #2f6fed;
+  --warn: #c0392b;
+  --good: #1f8a4c;
+  --bonus-bg: #fff8e1;
+  --bonus-border: #e8c547;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --surface: #1e2126;
+    --border: #33373f;
+    --text: #eef0f2;
+    --text-dim: #9aa1ab;
+    --accent: #6d9bff;
+    --warn: #ff6b5e;
+    --good: #4fd685;
+    --bonus-bg: #2a2410;
+    --bonus-border: #6b5a1a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+.screen {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 12px 12px 48px;
+}
+
+.screen__title {
+  font-size: 1.25rem;
+  margin: 4px 0 12px;
+}
+
+.screen__empty {
+  color: var(--text-dim);
+}
+
+/* --- вибір слоту --- */
+
+.slot-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.slot-picker__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.slot-picker__item--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.slot-picker__mode {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--border);
+  color: var(--text-dim);
+}
+
+.slot-picker__mode--urgent {
+  background: #f8d7d3;
+  color: #7a2118;
+}
+
+@media (prefers-color-scheme: dark) {
+  .slot-picker__mode--urgent {
+    background: #4a2420;
+    color: #ff9d8f;
+  }
+}
+
+.slot-picker__main {
+  font-weight: 600;
+}
+
+.slot-picker__sub {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+/* --- підсумок слоту --- */
+
+.slot-summary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.slot-summary__main {
+  font-weight: 600;
+}
+
+.slot-summary__absent {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.slot-summary__lab {
+  font-size: 0.9rem;
+  color: var(--good);
+}
+
+.slot-summary__lab--busy {
+  color: var(--warn);
+}
+
+/* --- тири --- */
+
+.tier-section {
+  margin-bottom: 18px;
+}
+
+.tier-section__title {
+  font-size: 1rem;
+  margin: 0 0 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.tier-section__label {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.candidate-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --- картка кандидата --- */
+
+.candidate-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.candidate-card--bonus {
+  background: var(--bonus-bg);
+  border-color: var(--bonus-border);
+}
+
+.candidate-card__name {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+
+.candidate-card__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+}
+
+.candidate-card__stats > div {
+  display: flex;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.candidate-card__stats dt {
+  color: var(--text-dim);
+  min-width: 9.5em;
+}
+
+.candidate-card__stats dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.value--warn {
+  color: var(--warn);
+}
+
+.value--good {
+  color: var(--good);
+}
+
+@media (min-width: 640px) {
+  .candidate-card__stats {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+  }
+
+  .candidate-card__stats > div {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .candidate-card__stats dt {
+    min-width: 0;
+  }
+}
