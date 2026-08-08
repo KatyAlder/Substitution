@@ -528,3 +528,112 @@ body {
     min-width: 0;
   }
 }
+
+/* --- календар --- */
+
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.calendar-controls button {
+  font: inherit;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: inherit;
+  cursor: pointer;
+}
+
+.calendar-controls__date {
+  font: inherit;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: inherit;
+}
+
+.calendar-controls__weekday {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.chip-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.chip-picker__item {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: inherit;
+  cursor: pointer;
+}
+
+.chip-picker__item--active {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.day-agenda {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.day-agenda__presence {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.day-agenda__slot {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.day-agenda__slot--substitution {
+  border-color: var(--good);
+}
+
+.day-agenda__slot-main {
+  font-size: 0.9rem;
+}
+
+.day-agenda__slot-teacher {
+  margin-top: 4px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.day-agenda__badge {
+  font-size: 0.7rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--good);
+  color: var(--surface);
+}
+
+.day-agenda__badge--pending {
+  background: var(--border);
+  color: var(--text-dim);
+}

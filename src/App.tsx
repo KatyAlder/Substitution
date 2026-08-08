@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { CalendarScreen } from "./screens/CalendarScreen";
 import { CandidatesScreen } from "./screens/CandidatesScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 
-type Tab = "candidates" | "profiles";
+type Tab = "candidates" | "calendar" | "profiles";
 
 function App() {
   const [tab, setTab] = useState<Tab>("candidates");
@@ -19,6 +20,13 @@ function App() {
         </button>
         <button
           type="button"
+          className={`tab-nav__item${tab === "calendar" ? " tab-nav__item--active" : ""}`}
+          onClick={() => setTab("calendar")}
+        >
+          Календар
+        </button>
+        <button
+          type="button"
           className={`tab-nav__item${tab === "profiles" ? " tab-nav__item--active" : ""}`}
           onClick={() => setTab("profiles")}
         >
@@ -26,7 +34,9 @@ function App() {
         </button>
       </nav>
 
-      {tab === "candidates" ? <CandidatesScreen /> : <ProfileScreen />}
+      {tab === "candidates" && <CandidatesScreen />}
+      {tab === "calendar" && <CalendarScreen />}
+      {tab === "profiles" && <ProfileScreen />}
     </>
   );
 }
