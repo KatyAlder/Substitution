@@ -4,7 +4,7 @@ import { DayAgenda } from "../components/DayAgenda";
 import { TeacherPicker } from "../components/TeacherPicker";
 import { effectiveDaySchedule } from "../calendar/effectiveDay";
 import { useAppState } from "../data/useAppState";
-import { dateToWeekday, weekdayName } from "../ranking/presence";
+import { addDays, dateToWeekday, todayIso, weekdayName } from "../ranking/presence";
 
 type FilterMode = "teacher" | "class" | "room";
 
@@ -13,16 +13,6 @@ const MODE_ITEMS: { value: FilterMode; label: string }[] = [
   { value: "class", label: "Клас" },
   { value: "room", label: "Авдиторія" },
 ];
-
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function shiftDate(date: string, deltaDays: number): string {
-  const d = new Date(`${date}T00:00:00`);
-  d.setDate(d.getDate() + deltaDays);
-  return d.toISOString().slice(0, 10);
-}
 
 export function CalendarScreen() {
   const [state] = useAppState();
@@ -67,7 +57,7 @@ export function CalendarScreen() {
       <h1 className="screen__title">Календар</h1>
 
       <div className="calendar-controls">
-        <button type="button" onClick={() => setDate((d) => shiftDate(d, -1))} aria-label="попередній день">
+        <button type="button" onClick={() => setDate((d) => addDays(d, -1))} aria-label="попередній день">
           ◀
         </button>
         <input
@@ -76,7 +66,7 @@ export function CalendarScreen() {
           value={date}
           onChange={(e) => setDate(e.target.value)}
         />
-        <button type="button" onClick={() => setDate((d) => shiftDate(d, 1))} aria-label="наступний день">
+        <button type="button" onClick={() => setDate((d) => addDays(d, 1))} aria-label="наступний день">
           ▶
         </button>
         <span className="calendar-controls__weekday">{weekdayName(dateToWeekday(date))}</span>

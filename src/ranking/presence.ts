@@ -1,5 +1,25 @@
 import type { TimeBlock } from "../types/teacher";
 
+/** Локальна календарна дата як "YYYY-MM-DD" — НЕ `toISOString().slice(0, 10)`,
+ *  бо та конвертує в UTC і в поясах на схід від нього (напр. UTC+3) відкушує
+ *  день назад біля півночі. */
+function formatLocalDate(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function todayIso(): string {
+  return formatLocalDate(new Date());
+}
+
+export function addDays(dateStr: string, days: number): string {
+  const d = new Date(`${dateStr}T00:00:00`);
+  d.setDate(d.getDate() + days);
+  return formatLocalDate(d);
+}
+
 /** "YYYY-MM-DD" -> 1 = понеділок ... 7 = неділя (наскрізна конвенція ТЗ). */
 export function dateToWeekday(dateStr: string): number {
   const jsDay = new Date(`${dateStr}T00:00:00`).getDay(); // 0 = неділя
@@ -26,7 +46,7 @@ export function shortWeekdayName(weekday: number): string {
   return SHORT_WEEKDAY_NAMES[weekday - 1] ?? "?";
 }
 
-function toMinutes(hhmm: string): number {
+export function toMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;
 }
