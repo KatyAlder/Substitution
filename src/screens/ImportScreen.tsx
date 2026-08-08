@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { importSchedule } from "../data/importSchedule";
 import { parseScheduleImport, summarizeImport } from "../data/importValidation";
-import { useAppState } from "../data/useAppState";
+import { useAppState } from "../data/AppStateContext";
 
 export function ImportScreen() {
   const [state, setState] = useAppState();

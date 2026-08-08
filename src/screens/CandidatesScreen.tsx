@@ -5,7 +5,7 @@ import { SlotPicker } from "../components/SlotPicker";
 import { TierSection } from "../components/TierSection";
 import { createSubstitutions, markBroadcast, markDeadEnd, recordAttempt } from "../data/actions";
 import type { NewSubstitutionInput } from "../data/actions";
-import { useAppState } from "../data/useAppState";
+import { useAppState } from "../data/AppStateContext";
 import { weekdayName } from "../ranking/presence";
 import { TIERS, rankCandidates } from "../ranking/rank";
 import type { AttemptResult } from "../types/substitution";

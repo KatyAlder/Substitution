@@ -4,6 +4,7 @@ import { CandidatesScreen } from "./screens/CandidatesScreen";
 import { ImportScreen } from "./screens/ImportScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { StatisticsScreen } from "./screens/StatisticsScreen";
+import { SyncBar } from "./sync/SyncBar";
 
 type Tab = "candidates" | "calendar" | "profiles" | "statistics" | "import";
 
@@ -12,6 +13,7 @@ function App() {
 
   return (
     <>
+      <SyncBar />
       <nav className="tab-nav">
         <button
           type="button"

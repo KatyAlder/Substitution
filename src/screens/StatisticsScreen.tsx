@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useAppState } from "../data/useAppState";
+import { useAppState } from "../data/AppStateContext";
 import { currentMonth, monthLabel } from "../profile/stats";
 import { dateToWeekday, weekdayName } from "../ranking/presence";
 import { deadEndsForMonth, shiftMonth, teacherMonthlyRows } from "../stats/schoolStats";

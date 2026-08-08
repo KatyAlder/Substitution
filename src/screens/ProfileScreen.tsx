@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { ProfileCard } from "../components/ProfileCard";
 import { TeacherPicker } from "../components/TeacherPicker";
-import { useAppState } from "../data/useAppState";
+import { useAppState } from "../data/AppStateContext";
 import { classLoad, currentMonth, monthLabel, monthlyStats } from "../profile/stats";
 
 export function ProfileScreen() {

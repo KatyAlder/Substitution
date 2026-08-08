@@ -3,7 +3,7 @@ import { ChipPicker } from "../components/ChipPicker";
 import { DayAgenda } from "../components/DayAgenda";
 import { TeacherPicker } from "../components/TeacherPicker";
 import { effectiveDaySchedule } from "../calendar/effectiveDay";
-import { useAppState } from "../data/useAppState";
+import { useAppState } from "../data/AppStateContext";
 import { addDays, dateToWeekday, todayIso, weekdayName } from "../ranking/presence";
 
 type FilterMode = "teacher" | "class" | "room";

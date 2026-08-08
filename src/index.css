@@ -71,6 +71,63 @@ body {
   padding: 12px 12px 48px;
 }
 
+/* --- синхронізація --- */
+
+.sync-bar {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 0;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.sync-bar__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.sync-bar__dot--ok {
+  background: var(--good);
+}
+
+.sync-bar__dot--error {
+  background: var(--warn);
+}
+
+.sync-bar__dot--saving {
+  background: var(--purple);
+  animation: sync-pulse 1s infinite;
+}
+
+@keyframes sync-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.sync-bar__message {
+  font-style: italic;
+}
+
+.sync-bar__btn {
+  margin-left: auto;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
 /* --- навігація --- */
 
 .tab-nav {
