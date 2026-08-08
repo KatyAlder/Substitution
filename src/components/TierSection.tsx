@@ -24,10 +24,14 @@ export function TierSection({
 }: Props) {
   if (candidates.length === 0) return null;
 
+  // Шість тирів згруповано в три кольорові смуги за пріоритетом (1-2 / 3-4 / 5-6) —
+  // палітра навчальних матеріалів дає лише три рівні акценту (teal/purple/bronze).
+  const band = tier <= 2 ? 1 : tier <= 4 ? 2 : 3;
+
   return (
-    <section className="tier-section">
+    <section className={`tier-section tier-section--${band}`}>
       <h2 className="tier-section__title">
-        Тир {tier}
+        <span className="tier-section__num">Тир {tier}</span>
         <span className="tier-section__label">{TIER_LABELS[tier]}</span>
       </h2>
       <ul className="candidate-list">

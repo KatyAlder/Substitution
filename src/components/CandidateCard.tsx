@@ -29,6 +29,7 @@ export function CandidateCard({ candidate, labApplicable, labAvailable, whatsapp
       <div className="candidate-card__name">
         {teacher.name}
         {teacher.isHourly && <span className="badge">погодинник</span>}
+        {inGoldenHour && <span className="badge badge--gold">золота година</span>}
       </div>
       <dl className="candidate-card__stats">
         <div>
