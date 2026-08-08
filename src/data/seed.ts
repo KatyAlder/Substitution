@@ -22,7 +22,6 @@ export const seedState: AppState = {
     {
       id: "tkachenko-ihor",
       name: "Ткаченко Ігор",
-      phone: "+380501112233",
       subjects: ["інформатика"],
       presence: [{ weekday: 2, from: "08:30", to: "14:00" }],
       goldenHours: [],
@@ -30,9 +29,8 @@ export const seedState: AppState = {
 
     // відсутня у слоті 2 (ср, урок 2, 7-А, біологія) — приклад з розділу 8
     {
-      id: "pavliuk-olena",
-      name: "Павлюк Олена",
-      phone: "+380501112244",
+      id: "klymenko-oksana",
+      name: "Клименко Оксана",
       curatorOf: "7-А",
       alwaysPresent: true,
       subjects: ["біологія"],
@@ -44,7 +42,6 @@ export const seedState: AppState = {
     {
       id: "honcharuk-iryna",
       name: "Гончарук Ірина",
-      phone: "+380501112255",
       curatorOf: "11",
       alwaysPresent: true,
       subjects: ["інформатика"],
@@ -57,7 +54,6 @@ export const seedState: AppState = {
     {
       id: "melnyk-taras",
       name: "Мельник Тарас",
-      phone: "+380501112266",
       subjects: ["інформатика"],
       presence: [
         { weekday: 2, from: "08:30", to: "14:00" },
@@ -71,7 +67,6 @@ export const seedState: AppState = {
     {
       id: "kravets-maryna",
       name: "Кравець Марина",
-      phone: "+380501112277",
       subjects: ["інформатика"],
       presence: [{ weekday: 2, from: "08:00", to: "14:30" }],
       goldenHours: [],
@@ -83,7 +78,6 @@ export const seedState: AppState = {
     {
       id: "bondarenko-svitlana",
       name: "Бондаренко Світлана",
-      phone: "+380501112288",
       isHourly: true,
       subjects: ["інформатика"],
       presence: [{ weekday: 2, from: "10:40", to: "12:00" }],
@@ -95,7 +89,6 @@ export const seedState: AppState = {
     {
       id: "zakharchenko-viktor",
       name: "Захарченко Віктор",
-      phone: "+380501112299",
       isHourly: true,
       subjects: ["інформатика"],
       presence: [{ weekday: 2, from: "09:00", to: "09:45" }],
@@ -106,7 +99,6 @@ export const seedState: AppState = {
     {
       id: "koval-andrii",
       name: "Коваль Андрій",
-      phone: "+380501112300",
       subjects: ["математика"],
       presence: [
         { weekday: 2, from: "08:00", to: "16:00" },
@@ -119,7 +111,6 @@ export const seedState: AppState = {
     {
       id: "shevchenko-natalia",
       name: "Шевченко Наталія",
-      phone: "+380501112311",
       curatorOf: "8-Б",
       alwaysPresent: true,
       subjects: ["українська мова"],
@@ -131,7 +122,6 @@ export const seedState: AppState = {
     {
       id: "lytvyn-oleh",
       name: "Литвин Олег",
-      phone: "+380501112322",
       subjects: ["фізика"],
       presence: [{ weekday: 4, from: "08:00", to: "15:00" }],
       goldenHours: [],
@@ -141,7 +131,6 @@ export const seedState: AppState = {
     {
       id: "savchuk-dmytro",
       name: "Савчук Дмитро",
-      phone: "+380501112333",
       subjects: ["англійська мова"],
       presence: [{ weekday: 2, from: "09:00", to: "13:00" }],
       goldenHours: [{ weekday: 2, from: "10:30", to: "12:00" }],
@@ -151,7 +140,6 @@ export const seedState: AppState = {
     {
       id: "romaniuk-yulia",
       name: "Романюк Юлія",
-      phone: "+380501112344",
       subjects: ["фізична культура"],
       presence: [{ weekday: 2, from: "08:00", to: "14:00" }],
       goldenHours: [],
@@ -162,7 +150,6 @@ export const seedState: AppState = {
     {
       id: "diachenko-petro",
       name: "Дяченко Петро",
-      phone: "+380501112355",
       subjects: ["хімія"],
       presence: [],
       goldenHours: [],
@@ -175,10 +162,10 @@ export const seedState: AppState = {
     { teacherId: "tkachenko-ihor", weekday: 2, lesson: 3, class: "11", subject: "інформатика", room: "каб-14" },
     { teacherId: "tkachenko-ihor", weekday: 4, lesson: 1, class: "9-Б", subject: "інформатика", room: "каб-14" },
 
-    // Павлюк Олена
-    { teacherId: "pavliuk-olena", weekday: 2, lesson: 4, class: "7-А", subject: "біологія", room: "каб-12" },
-    { teacherId: "pavliuk-olena", weekday: 3, lesson: 2, class: "7-А", subject: "біологія", room: "каб-12" },
-    { teacherId: "pavliuk-olena", weekday: 4, lesson: 1, class: "7-А", subject: "біологія", room: "каб-12" },
+    // Клименко Оксана
+    { teacherId: "klymenko-oksana", weekday: 2, lesson: 4, class: "7-А", subject: "біологія", room: "каб-12" },
+    { teacherId: "klymenko-oksana", weekday: 3, lesson: 2, class: "7-А", subject: "біологія", room: "каб-12" },
+    { teacherId: "klymenko-oksana", weekday: 4, lesson: 1, class: "7-А", subject: "біологія", room: "каб-12" },
 
     // Гончарук Ірина
     { teacherId: "honcharuk-iryna", weekday: 3, lesson: 1, class: "11", subject: "інформатика", room: "каб-14" },
@@ -253,7 +240,7 @@ export const seedState: AppState = {
       date: "2026-09-09",
       lesson: 2,
       class: "7-А",
-      absentTeacherId: "pavliuk-olena",
+      absentTeacherId: "klymenko-oksana",
       mode: "planned",
       status: "open",
       officialCalendarUpdated: false,
@@ -265,7 +252,7 @@ export const seedState: AppState = {
       date: "2026-09-02",
       lesson: 2,
       class: "9-Б",
-      absentTeacherId: "pavliuk-olena",
+      absentTeacherId: "klymenko-oksana",
       mode: "urgent",
       status: "closed",
       substituteId: "melnyk-taras",

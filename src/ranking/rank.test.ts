@@ -16,7 +16,7 @@ describe("слот 1 — вт, урок 3, 11 клас, інформатика (
     expect(ids(result.tiers[2])).toEqual(["honcharuk-iryna"]);
     expect(ids(result.tiers[3])).toEqual(["zakharchenko-viktor"]);
     expect(ids(result.tiers[4])).toEqual(["koval-andrii"]);
-    expect(ids(result.tiers[5])).toEqual(["pavliuk-olena", "shevchenko-natalia"]);
+    expect(ids(result.tiers[5])).toEqual(["klymenko-oksana", "shevchenko-natalia"]);
     expect(ids(result.tiers[6])).toEqual(["lytvyn-oleh"]);
   });
 
@@ -72,7 +72,7 @@ describe("слот 1 — вт, урок 3, 11 клас, інформатика (
   });
 });
 
-describe("слот 2 — ср, урок 2, 7-А, біологія (відсутня Павлюк Олена)", () => {
+describe("слот 2 — ср, урок 2, 7-А, біологія (відсутня Клименко Оксана)", () => {
   const result = rankCandidates(seedState, sub2);
 
   it("розкладає по тирах для іншого дня й класу", () => {

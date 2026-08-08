@@ -138,7 +138,7 @@ export function ParseRequestPanel({ state, onCreate }: Props) {
       <div className="parse-panel__field">
         <textarea
           className="parse-panel__textarea"
-          placeholder="Вставте повідомлення, напр. «Заміни Олені Павлюк на завтра на 15:00»"
+          placeholder="Вставте повідомлення, напр. «Заміни Оксані Клименко на завтра на 15:00»"
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={2}

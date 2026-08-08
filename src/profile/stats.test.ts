@@ -20,9 +20,9 @@ describe("classLoad", () => {
 
 describe("weeklyPresenceLabel / weeklyGoldenHourLabel", () => {
   it("'увесь час' для alwaysPresent, незалежно від дня тижня", () => {
-    const pavliuk = seedState.teachers.find((t) => t.id === "pavliuk-olena")!;
-    expect(weeklyPresenceLabel(pavliuk, 1)).toBe("увесь час");
-    expect(weeklyPresenceLabel(pavliuk, 3)).toBe("увесь час");
+    const klymenko = seedState.teachers.find((t) => t.id === "klymenko-oksana")!;
+    expect(weeklyPresenceLabel(klymenko, 1)).toBe("увесь час");
+    expect(weeklyPresenceLabel(klymenko, 3)).toBe("увесь час");
   });
 
   it("формат блоку в конкретний день, '—' у решту днів", () => {
@@ -32,9 +32,9 @@ describe("weeklyPresenceLabel / weeklyGoldenHourLabel", () => {
   });
 
   it("золота година показується лише в свій день тижня", () => {
-    const pavliuk = seedState.teachers.find((t) => t.id === "pavliuk-olena")!;
-    expect(weeklyGoldenHourLabel(pavliuk, 3)).toBe("12:00–15:00");
-    expect(weeklyGoldenHourLabel(pavliuk, 2)).toBe("—");
+    const klymenko = seedState.teachers.find((t) => t.id === "klymenko-oksana")!;
+    expect(weeklyGoldenHourLabel(klymenko, 3)).toBe("12:00–15:00");
+    expect(weeklyGoldenHourLabel(klymenko, 2)).toBe("—");
   });
 });
 
