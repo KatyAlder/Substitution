@@ -1,5 +1,5 @@
 import type { AppState } from "../types/state";
-import type { AttemptResult, ClosedVia } from "../types/substitution";
+import type { AttemptResult, ClosedVia, SubstitutionMode } from "../types/substitution";
 
 /** Записує спробу; при "agreed" одразу закриває заміну (розділ 3, 5 ТЗ).
  *  Канал закриття визначається статусом заміни в момент згоди: "in-chat"
@@ -49,4 +49,27 @@ export function markBroadcast(state: AppState, substitutionIds: string[]): AppSt
     ...state,
     substitutions: state.substitutions.map((s) => (ids.has(s.id) ? { ...s, status: "in-chat" as const } : s)),
   };
+}
+
+export interface NewSubstitutionInput {
+  date: string;
+  lesson: number;
+  class: string;
+  absentTeacherId: string;
+  mode: SubstitutionMode;
+}
+
+/** Заводить одну чи кілька нових замін одразу зі статусом "open" (розділ 6
+ *  ТЗ — результат розбору тексту, і одиночний слот, і пакет "на весь
+ *  день", це той самий шлях, просто масив різної довжини). Далі в чергу
+ *  опитування чи в розсилку заводить наявна логіка CandidatesScreen за
+ *  mode/status — тут нічого додатково не потрібно. */
+export function createSubstitutions(state: AppState, inputs: NewSubstitutionInput[]): AppState {
+  const created = inputs.map((input) => ({
+    id: crypto.randomUUID(),
+    ...input,
+    status: "open" as const,
+    officialCalendarUpdated: false,
+  }));
+  return { ...state, substitutions: [...state.substitutions, ...created] };
 }

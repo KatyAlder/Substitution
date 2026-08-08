@@ -699,3 +699,102 @@ body {
   padding: 10px 12px;
   font-size: 0.9rem;
 }
+
+/* --- панель розбору тексту запиту --- */
+
+.parse-panel__toggle {
+  margin-bottom: 16px;
+}
+
+.parse-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.parse-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.parse-panel__label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.parse-panel__textarea {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: inherit;
+  resize: vertical;
+}
+
+.parse-panel__checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.parse-panel__hint {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.parse-panel__warning {
+  font-size: 0.85rem;
+  color: var(--warn);
+  margin: 0;
+}
+
+.parse-panel__preview {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.parse-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lesson-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lesson-checklist__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.9rem;
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.lesson-checklist__item--conflict {
+  opacity: 0.7;
+}
+
+.lesson-checklist__warning {
+  color: var(--warn);
+  font-size: 0.8rem;
+}

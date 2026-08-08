@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { BroadcastPanel } from "../components/BroadcastPanel";
+import { ParseRequestPanel } from "../components/ParseRequestPanel";
 import { SlotPicker } from "../components/SlotPicker";
 import { TierSection } from "../components/TierSection";
-import { markBroadcast, markDeadEnd, recordAttempt } from "../data/actions";
+import { createSubstitutions, markBroadcast, markDeadEnd, recordAttempt } from "../data/actions";
+import type { NewSubstitutionInput } from "../data/actions";
 import { useAppState } from "../data/useAppState";
 import { weekdayName } from "../ranking/presence";
 import { TIERS, rankCandidates } from "../ranking/rank";
@@ -63,9 +65,15 @@ export function CandidatesScreen() {
     setState((prev) => markBroadcast(prev, pendingBroadcast.map((s) => s.id)));
   }
 
+  function handleCreate(inputs: NewSubstitutionInput[]) {
+    setState((prev) => createSubstitutions(prev, inputs));
+  }
+
   return (
     <main className="screen">
       <h1 className="screen__title">Активні заміни</h1>
+
+      <ParseRequestPanel state={state} onCreate={handleCreate} />
 
       {pendingBroadcast.length > 0 && (
         <BroadcastPanel substitutions={pendingBroadcast} bells={state.bells} onMarkAllInChat={handleMarkAllInChat} />

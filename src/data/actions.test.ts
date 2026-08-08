@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedState } from "./seed";
-import { markBroadcast, markDeadEnd, recordAttempt } from "./actions";
+import { createSubstitutions, markBroadcast, markDeadEnd, recordAttempt } from "./actions";
 
 describe("recordAttempt", () => {
   it("додає спробу й лишає заміну відкритою, якщо результат не 'agreed'", () => {
@@ -61,5 +61,41 @@ describe("markBroadcast", () => {
   it("з порожнім списком нічого не змінює", () => {
     const next = markBroadcast(seedState, []);
     expect(next.substitutions).toEqual(seedState.substitutions);
+  });
+});
+
+describe("createSubstitutions", () => {
+  it("додає одну нову заміну зі статусом 'open'", () => {
+    const next = createSubstitutions(seedState, [
+      { date: "2026-09-08", lesson: 1, class: "11", absentTeacherId: "tkachenko-ihor", mode: "urgent" },
+    ]);
+    expect(next.substitutions).toHaveLength(seedState.substitutions.length + 1);
+    const added = next.substitutions.at(-1)!;
+    expect(added).toMatchObject({
+      date: "2026-09-08",
+      lesson: 1,
+      class: "11",
+      absentTeacherId: "tkachenko-ihor",
+      mode: "urgent",
+      status: "open",
+      officialCalendarUpdated: false,
+    });
+    expect(added.id).toBeTruthy();
+  });
+
+  it("пакетно додає кілька замін одразу ('на весь день')", () => {
+    const next = createSubstitutions(seedState, [
+      { date: "2026-09-08", lesson: 1, class: "9-А", absentTeacherId: "kravets-maryna", mode: "urgent" },
+      { date: "2026-09-08", lesson: 2, class: "8-Б", absentTeacherId: "kravets-maryna", mode: "urgent" },
+    ]);
+    expect(next.substitutions).toHaveLength(seedState.substitutions.length + 2);
+  });
+
+  it("не мутує вихідний стан", () => {
+    const before = JSON.stringify(seedState);
+    createSubstitutions(seedState, [
+      { date: "2026-09-08", lesson: 1, class: "11", absentTeacherId: "tkachenko-ihor", mode: "urgent" },
+    ]);
+    expect(JSON.stringify(seedState)).toBe(before);
   });
 });

@@ -1,3 +1,4 @@
+import { MONTH_GENITIVE } from "./parser/parseRequest";
 import { dateToWeekday, weekdayName } from "./ranking/presence";
 import type { Bell } from "./types/schedule";
 import type { Substitution } from "./types/substitution";
@@ -21,6 +22,24 @@ export function buildBroadcastMessage(substitutions: Substitution[], bells: Bell
     return `- ${weekdayName(dateToWeekday(s.date))}, ${s.date}, ${s.class} клас, урок ${s.lesson}${time}`;
   });
   return `Потрібен доброволець:\n${lines.join("\n")}`;
+}
+
+/** Прев'ю тексту для сценарію "на весь день" (розділ 6 ТЗ) — дата в
+ *  заголовку в родовому відмінку ("2 вересня"), формат часу — той самий
+ *  zero-padded "09:00", що й у решті застосунку (буквальний приклад у ТЗ
+ *  писав "9:00" без нуля — суто орфографія прикладу, не вимога). */
+export function buildWholeDayMessage(
+  date: string,
+  weekday: number,
+  entries: { class: string; lesson: number; start: string; end: string }[]
+): string {
+  const [, monthStr, dayStr] = date.split("-");
+  const monthName = MONTH_GENITIVE[Number(monthStr) - 1];
+  const header = `Заміни на ${weekdayName(weekday)}, ${Number(dayStr)} ${monthName}`;
+  const lines = [...entries]
+    .sort((a, b) => a.lesson - b.lesson)
+    .map((e) => `${e.class} клас — ${e.start}–${e.end}`);
+  return [header, ...lines].join("\n");
 }
 
 /** `undefined`, якщо у вчителя немає номера — wa.me без нього не працює (розділ 3 ТЗ). */
