@@ -229,10 +229,7 @@ body {
 /* --- підсумок слоту --- */
 
 .slot-summary {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
+  padding: 0 4px;
   margin-bottom: 16px;
   display: flex;
   flex-direction: column;
