@@ -848,6 +848,16 @@ body {
   gap: 6px;
 }
 
+.import-summary {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+}
+
 .lesson-checklist {
   display: flex;
   flex-direction: column;

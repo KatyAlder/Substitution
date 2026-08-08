@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { CalendarScreen } from "./screens/CalendarScreen";
 import { CandidatesScreen } from "./screens/CandidatesScreen";
+import { ImportScreen } from "./screens/ImportScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { StatisticsScreen } from "./screens/StatisticsScreen";
 
-type Tab = "candidates" | "calendar" | "profiles" | "statistics";
+type Tab = "candidates" | "calendar" | "profiles" | "statistics" | "import";
 
 function App() {
   const [tab, setTab] = useState<Tab>("candidates");
@@ -40,12 +41,20 @@ function App() {
         >
           Статистика
         </button>
+        <button
+          type="button"
+          className={`tab-nav__item${tab === "import" ? " tab-nav__item--active" : ""}`}
+          onClick={() => setTab("import")}
+        >
+          Імпорт
+        </button>
       </nav>
 
       {tab === "candidates" && <CandidatesScreen />}
       {tab === "calendar" && <CalendarScreen />}
       {tab === "profiles" && <ProfileScreen />}
       {tab === "statistics" && <StatisticsScreen />}
+      {tab === "import" && <ImportScreen />}
     </>
   );
 }

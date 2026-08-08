@@ -17,7 +17,7 @@ function mergeTeacher(existing: Teacher | undefined, incoming: ImportTeacher): T
   };
 }
 
-function scheduleKey(entry: Pick<ScheduleEntry, "teacherId" | "weekday" | "lesson">): string {
+export function scheduleKey(entry: Pick<ScheduleEntry, "teacherId" | "weekday" | "lesson">): string {
   return `${entry.teacherId}|${entry.weekday}|${entry.lesson}`;
 }
 
