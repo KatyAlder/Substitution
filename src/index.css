@@ -533,6 +533,13 @@ body {
   padding: 12px;
 }
 
+.profile-card__toolbar {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
 .profile-card__header {
   margin-bottom: 12px;
 }
@@ -866,6 +873,16 @@ body {
   resize: vertical;
 }
 
+.parse-panel__input {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: inherit;
+}
+
 .parse-panel__checkbox {
   flex-direction: row;
   align-items: center;
@@ -935,4 +952,45 @@ body {
 .lesson-checklist__warning {
   color: var(--warn);
   font-size: 0.8rem;
+}
+
+/* --- редактор блоків часу (присутність/золоті години у формі вчителя) --- */
+
+.time-block-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.time-block-editor__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.time-block-editor__row select,
+.time-block-editor__row input[type="time"] {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: inherit;
+}
+
+.time-block-editor__row--invalid input[type="time"] {
+  border-color: var(--warn);
+}
+
+.time-block-editor__remove {
+  font: inherit;
+  font-size: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--warn);
+  cursor: pointer;
+  padding: 2px 8px;
 }

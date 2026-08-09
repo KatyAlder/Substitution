@@ -1,5 +1,6 @@
 import type { AppState } from "../types/state";
 import type { AttemptResult, ClosedVia, SubstitutionMode } from "../types/substitution";
+import type { Teacher } from "../types/teacher";
 
 /** Записує спробу; при "agreed" одразу закриває заміну (розділ 3, 5 ТЗ).
  *  Канал закриття визначається статусом заміни в момент згоди: "in-chat"
@@ -72,4 +73,37 @@ export function createSubstitutions(state: AppState, inputs: NewSubstitutionInpu
     officialCalendarUpdated: false,
   }));
   return { ...state, substitutions: [...state.substitutions, ...created] };
+}
+
+/** Ручне редагування профілю вчителя (екран "Профілі"). id — стабільний
+ *  зовнішній ключ, тому свідомо не приймається в патчі. На відміну від
+ *  importSchedule.mergeTeacher (яка робить incoming.X ?? existing.X), тут
+ *  просте присвоєння — патч заміняє поле цілком, включно з можливістю
+ *  очистити phone/curatorOf через undefined. */
+export function updateTeacher(state: AppState, teacherId: string, patch: Omit<Partial<Teacher>, "id">): AppState {
+  return {
+    ...state,
+    teachers: state.teachers.map((t) => (t.id === teacherId ? { ...t, ...patch } : t)),
+  };
+}
+
+/** Видалення вчителя — повне очищення (свідомий вибір Kate, а не
+ *  лишати історію/тупики): прибирає вчителя, його розклад, усі заміни,
+ *  де він відсутній або був замісником, і спроби, де він фігурує сам
+ *  або що належали вже видаленим замінам. */
+export function deleteTeacher(state: AppState, teacherId: string): AppState {
+  const removedSubstitutionIds = new Set(
+    state.substitutions
+      .filter((s) => s.absentTeacherId === teacherId || s.substituteId === teacherId)
+      .map((s) => s.id)
+  );
+  return {
+    ...state,
+    teachers: state.teachers.filter((t) => t.id !== teacherId),
+    schedule: state.schedule.filter((e) => e.teacherId !== teacherId),
+    substitutions: state.substitutions.filter((s) => !removedSubstitutionIds.has(s.id)),
+    attempts: state.attempts.filter(
+      (a) => a.teacherId !== teacherId && !removedSubstitutionIds.has(a.substitutionId)
+    ),
+  };
 }

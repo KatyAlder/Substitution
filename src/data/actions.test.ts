@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedState } from "./seed";
-import { createSubstitutions, markBroadcast, markDeadEnd, recordAttempt } from "./actions";
+import { createSubstitutions, deleteTeacher, markBroadcast, markDeadEnd, recordAttempt, updateTeacher } from "./actions";
 
 describe("recordAttempt", () => {
   it("додає спробу й лишає заміну відкритою, якщо результат не 'agreed'", () => {
@@ -96,6 +96,77 @@ describe("createSubstitutions", () => {
     createSubstitutions(seedState, [
       { date: "2026-09-08", lesson: 1, class: "11", absentTeacherId: "tkachenko-ihor", mode: "urgent" },
     ]);
+    expect(JSON.stringify(seedState)).toBe(before);
+  });
+});
+
+describe("updateTeacher", () => {
+  it("оновлює прості поля вказаного вчителя, інших не чіпає", () => {
+    const next = updateTeacher(seedState, "melnyk-taras", { name: "Мельник Т.", phone: "0501112233" });
+    const updated = next.teachers.find((t) => t.id === "melnyk-taras")!;
+    expect(updated.name).toBe("Мельник Т.");
+    expect(updated.phone).toBe("0501112233");
+
+    const other = next.teachers.find((t) => t.id === "kravets-maryna")!;
+    expect(other).toEqual(seedState.teachers.find((t) => t.id === "kravets-maryna"));
+  });
+
+  it("дозволяє очистити необов'язкове поле, поставивши undefined", () => {
+    const withPhone = updateTeacher(seedState, "melnyk-taras", { phone: "0501112233" });
+    const cleared = updateTeacher(withPhone, "melnyk-taras", { phone: undefined });
+    expect(cleared.teachers.find((t) => t.id === "melnyk-taras")!.phone).toBeUndefined();
+  });
+
+  it("замінює масиви subjects/presence/goldenHours цілком, а не зливає", () => {
+    const next = updateTeacher(seedState, "melnyk-taras", {
+      subjects: ["математика"],
+      presence: [{ weekday: 1, from: "08:00", to: "09:00" }],
+      goldenHours: [],
+    });
+    const updated = next.teachers.find((t) => t.id === "melnyk-taras")!;
+    expect(updated.subjects).toEqual(["математика"]);
+    expect(updated.presence).toEqual([{ weekday: 1, from: "08:00", to: "09:00" }]);
+  });
+
+  it("не мутує вихідний стан", () => {
+    const before = JSON.stringify(seedState);
+    updateTeacher(seedState, "melnyk-taras", { name: "X" });
+    expect(JSON.stringify(seedState)).toBe(before);
+  });
+});
+
+describe("deleteTeacher", () => {
+  it("прибирає вчителя й весь його розклад", () => {
+    const next = deleteTeacher(seedState, "koval-andrii");
+    expect(next.teachers.find((t) => t.id === "koval-andrii")).toBeUndefined();
+    expect(next.schedule.some((e) => e.teacherId === "koval-andrii")).toBe(false);
+  });
+
+  it("прибирає заміни, де видалений вчитель відсутній, разом з ним", () => {
+    const next = deleteTeacher(seedState, "koval-andrii");
+    expect(next.substitutions.find((s) => s.id === "sub-h2")).toBeUndefined();
+    expect(next.substitutions.find((s) => s.id === "sub-h3")).toBeUndefined();
+    expect(next.substitutions.find((s) => s.id === "sub-h4")).toBeUndefined();
+  });
+
+  it("прибирає заміни, де видалений вчитель був замісником", () => {
+    const next = deleteTeacher(seedState, "savchuk-dmytro");
+    expect(next.substitutions.find((s) => s.id === "sub-h2")).toBeUndefined();
+    // заміни інших замісників лишаються
+    expect(next.substitutions.find((s) => s.id === "sub-h1")).toBeDefined();
+  });
+
+  it("не зачіпає інших учителів і їхній розклад/заміни", () => {
+    const next = deleteTeacher(seedState, "koval-andrii");
+    expect(next.teachers.find((t) => t.id === "melnyk-taras")).toEqual(
+      seedState.teachers.find((t) => t.id === "melnyk-taras")
+    );
+    expect(next.substitutions.find((s) => s.id === "sub-1")).toBeDefined();
+  });
+
+  it("не мутує вихідний стан", () => {
+    const before = JSON.stringify(seedState);
+    deleteTeacher(seedState, "koval-andrii");
     expect(JSON.stringify(seedState)).toBe(before);
   });
 });
