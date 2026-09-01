@@ -1,3 +1,4 @@
+import { classesOverlap } from "../ranking/classes";
 import { toMinutes } from "../ranking/presence";
 import type { Bell, ScheduleEntry } from "../types/schedule";
 import type { Substitution, SubstitutionMode } from "../types/substitution";
@@ -65,7 +66,7 @@ export function findConflict(
   lesson: number,
   className: string
 ): Substitution | undefined {
-  return substitutions.find((s) => s.date === date && s.lesson === lesson && s.class === className);
+  return substitutions.find((s) => s.date === date && s.lesson === lesson && classesOverlap(s.class, className));
 }
 
 /** Дата = сьогодні → термінова, інакше завчасна. Лише дефолт для форми —

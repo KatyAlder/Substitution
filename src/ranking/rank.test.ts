@@ -92,3 +92,31 @@ describe("слот 2 — ср, урок 2, 7-А, біологія (відсут�
     expect(result.labAvailable).toBe(true);
   });
 });
+
+describe("спарені класи", () => {
+  const paired = {
+    ...seedState,
+    schedule: [
+      ...seedState.schedule,
+      // Спарений урок: 5 і 6 класи разом в одного вчителя.
+      { teacherId: "lytvyn-oleh", weekday: 2, lesson: 3, class: "5-6", subject: "фізика", room: "каб-7" },
+    ],
+  };
+
+  function rankFor(className: string) {
+    return rankCandidates(paired, { ...sub1, class: className, absentTeacherId: "koval-andrii", lesson: 4 });
+  }
+
+  it("вчитель спареного уроку вважається таким, що викладає в кожному з класів", () => {
+    for (const className of ["5", "6", "5-6"]) {
+      const teaching = [...rankFor(className).tiers[1], ...rankFor(className).tiers[3]];
+      expect(ids(teaching)).toContain("lytvyn-oleh");
+    }
+  });
+
+  it("сусідній клас поза спареним уроком не зараховується", () => {
+    const result = rankFor("7");
+    const teaching = [...result.tiers[1], ...result.tiers[2], ...result.tiers[3]];
+    expect(ids(teaching)).not.toContain("lytvyn-oleh");
+  });
+});

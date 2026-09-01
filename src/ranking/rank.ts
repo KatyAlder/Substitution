@@ -2,6 +2,7 @@ import type { Teacher } from "../types/teacher";
 import type { Bell, ScheduleEntry } from "../types/schedule";
 import type { Attempt, Substitution } from "../types/substitution";
 import { CONSECUTIVE_REFUSALS_THRESHOLD, TECHNICAL_SUBJECT_ROOMS } from "../config/settings";
+import { classesOverlap } from "./classes";
 import { dateToWeekday, isInGoldenHour, isPresentAtSlot } from "./presence";
 
 export type Tier = 1 | 2 | 3 | 4 | 5 | 6;
@@ -50,8 +51,9 @@ function getBell(bells: Bell[], lesson: number): Bell | undefined {
   return bells.find((b) => b.lesson === lesson);
 }
 
+/** Спарений урок ("5-6") зараховується як викладання в кожному зі своїх класів. */
 function teachesClass(schedule: ScheduleEntry[], teacherId: string, className: string): boolean {
-  return schedule.some((e) => e.teacherId === teacherId && e.class === className);
+  return schedule.some((e) => e.teacherId === teacherId && classesOverlap(e.class, className));
 }
 
 function lessonsOnWeekday(schedule: ScheduleEntry[], teacherId: string, weekday: number): number {
@@ -113,7 +115,7 @@ export function rankCandidates(state: RankState, substitution: Substitution): Ra
       e.teacherId === substitution.absentTeacherId &&
       e.weekday === weekday &&
       e.lesson === substitution.lesson &&
-      e.class === substitution.class
+      classesOverlap(e.class, substitution.class)
   );
 
   const subject = absentEntry?.subject;

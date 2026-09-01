@@ -5,6 +5,7 @@ import { TeacherPicker } from "../components/TeacherPicker";
 import { effectiveDaySchedule } from "../calendar/effectiveDay";
 import { useAppState } from "../data/AppStateContext";
 import { addDays, dateToWeekday, todayIso, weekdayName } from "../ranking/presence";
+import { classesOverlap, splitClassLabel } from "../ranking/classes";
 
 type FilterMode = "teacher" | "class" | "room";
 
@@ -21,7 +22,8 @@ export function CalendarScreen() {
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
 
   const classes = useMemo(
-    () => [...new Set(state.schedule.map((e) => e.class))].sort((a, b) => a.localeCompare(b, "uk")),
+    // Спарений урок ("5-6") дає окремий пункт для кожного свого класу.
+    () => [...new Set(state.schedule.flatMap((e) => splitClassLabel(e.class)))].sort((a, b) => a.localeCompare(b, "uk")),
     [state.schedule]
   );
   const rooms = useMemo(
@@ -34,7 +36,7 @@ export function CalendarScreen() {
   const filteredSlots = useMemo(() => {
     if (!selectedValue) return [];
     if (mode === "teacher") return daySlots.filter((s) => s.teacherId === selectedValue);
-    if (mode === "class") return daySlots.filter((s) => s.class === selectedValue);
+    if (mode === "class") return daySlots.filter((s) => classesOverlap(s.class, selectedValue));
     return daySlots.filter((s) => s.room === selectedValue);
   }, [daySlots, mode, selectedValue]);
 

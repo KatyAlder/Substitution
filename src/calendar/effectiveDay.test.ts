@@ -53,6 +53,36 @@ describe("effectiveDaySchedule", () => {
     expect(untouched?.isSubstitution).toBe(false);
   });
 
+  it("заміна, заведена на один клас спареного уроку, накриває весь спарений слот", () => {
+    const state = {
+      ...seedState,
+      schedule: [
+        ...seedState.schedule,
+        { teacherId: "lytvyn-oleh", weekday: 2, lesson: 6, class: "5-6", subject: "фізика", room: "каб-7" },
+      ],
+      substitutions: [
+        ...seedState.substitutions,
+        {
+          id: "sub-paired",
+          date: "2026-09-01",
+          lesson: 6,
+          class: "5",
+          absentTeacherId: "lytvyn-oleh",
+          mode: "urgent" as const,
+          status: "closed" as const,
+          substituteId: "koval-andrii",
+          closedVia: "chat" as const,
+          officialCalendarUpdated: false,
+        },
+      ],
+    };
+
+    const slot = effectiveDaySchedule(state, "2026-09-01").find((s) => s.class === "5-6" && s.lesson === 6);
+    expect(slot?.teacherId).toBe("koval-andrii");
+    expect(slot?.isSubstitution).toBe(true);
+    expect(slot?.substituteFor).toBe("lytvyn-oleh");
+  });
+
   it("закрита заміна без substituteId трактується як не закрита (захист)", () => {
     const state = {
       ...seedState,
