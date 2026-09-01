@@ -332,3 +332,7 @@ export const seedState: AppState = {
     { id: "att-5", substitutionId: "hist-5", teacherId: "romaniuk-yulia", at: "2026-09-05T10:00:00", result: "refused" },
   ],
 };
+
+/** Id всіх вигаданих вчителів вище — щоб одноразово прибрати демо-дані з бази
+ *  після імпорту реальної (кнопка на вкладці "Імпорт"). */
+export const SEED_TEACHER_IDS = seedState.teachers.map((t) => t.id);

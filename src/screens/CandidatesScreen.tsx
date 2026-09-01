@@ -3,7 +3,7 @@ import { BroadcastPanel } from "../components/BroadcastPanel";
 import { ParseRequestPanel } from "../components/ParseRequestPanel";
 import { SlotPicker } from "../components/SlotPicker";
 import { TierSection } from "../components/TierSection";
-import { createSubstitutions, markBroadcast, markDeadEnd, recordAttempt } from "../data/actions";
+import { createSubstitutions, deleteSubstitution, markBroadcast, markDeadEnd, recordAttempt } from "../data/actions";
 import type { NewSubstitutionInput } from "../data/actions";
 import { useAppState } from "../data/AppStateContext";
 import { weekdayName } from "../ranking/presence";
@@ -61,6 +61,20 @@ export function CandidatesScreen() {
     setState((prev) => markDeadEnd(prev, selected.id));
   }
 
+  // Видалення — не те саме, що "Тупик": тупик лишається в історії й
+  // статистиці, а видалення прибирає помилково заведену заміну повністю.
+  function handleDeleteSubstitution(id: string) {
+    const sub = state.substitutions.find((s) => s.id === id);
+    if (!sub) return;
+    const absent = state.teachers.find((t) => t.id === sub.absentTeacherId);
+    const confirmMsg =
+      `Видалити заміну ${sub.date}, урок ${sub.lesson}, ${sub.class} клас ` +
+      `(відсутній: ${absent?.name ?? sub.absentTeacherId})? ` +
+      "Разом з нею зникнуть записи обдзвону. Дію не можна скасувати.";
+    if (!window.confirm(confirmMsg)) return;
+    setState((prev) => deleteSubstitution(prev, id));
+  }
+
   function handleMarkAllInChat() {
     setState((prev) => markBroadcast(prev, pendingBroadcast.map((s) => s.id)));
   }
@@ -76,7 +90,12 @@ export function CandidatesScreen() {
       <ParseRequestPanel state={state} onCreate={handleCreate} />
 
       {pendingBroadcast.length > 0 && (
-        <BroadcastPanel substitutions={pendingBroadcast} bells={state.bells} onMarkAllInChat={handleMarkAllInChat} />
+        <BroadcastPanel
+          substitutions={pendingBroadcast}
+          bells={state.bells}
+          onMarkAllInChat={handleMarkAllInChat}
+          onDelete={handleDeleteSubstitution}
+        />
       )}
 
       {queueSubstitutions.length === 0 ? (
@@ -88,6 +107,7 @@ export function CandidatesScreen() {
           bells={state.bells}
           selectedId={selectedId}
           onSelect={setSelectedId}
+          onDelete={handleDeleteSubstitution}
         />
       )}
 

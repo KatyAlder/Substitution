@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { dateToWeekday, weekdayName } from "../ranking/presence";
 import { GROUP_CHAT_INVITE_URL } from "../config/settings";
 import type { Bell } from "../types/schedule";
 import type { Substitution } from "../types/substitution";
@@ -8,9 +9,10 @@ interface Props {
   substitutions: Substitution[];
   bells: Bell[];
   onMarkAllInChat: () => void;
+  onDelete: (id: string) => void;
 }
 
-export function BroadcastPanel({ substitutions, bells, onMarkAllInChat }: Props) {
+export function BroadcastPanel({ substitutions, bells, onMarkAllInChat, onDelete }: Props) {
   const [copied, setCopied] = useState(false);
   const message = buildBroadcastMessage(substitutions, bells);
 
@@ -23,6 +25,28 @@ export function BroadcastPanel({ substitutions, bells, onMarkAllInChat }: Props)
   return (
     <section className="broadcast-panel">
       <h2 className="broadcast-panel__title">Завчасні заміни очікують розсилки ({substitutions.length})</h2>
+      <ul className="broadcast-panel__list">
+        {substitutions.map((sub) => {
+          const bell = bells.find((b) => b.lesson === sub.lesson);
+          return (
+            <li key={sub.id} className="broadcast-panel__item">
+              <span>
+                {weekdayName(dateToWeekday(sub.date))}, {sub.date} ·{" "}
+                {bell ? `${bell.start}–${bell.end}` : `урок ${sub.lesson}`} · {sub.class} клас
+              </span>
+              <button
+                type="button"
+                className="slot-picker__delete"
+                title="Видалити заміну"
+                aria-label="Видалити заміну"
+                onClick={() => onDelete(sub.id)}
+              >
+                ✕
+              </button>
+            </li>
+          );
+        })}
+      </ul>
       <pre className="broadcast-panel__text">{message}</pre>
       <div className="broadcast-panel__actions">
         <button type="button" className="btn" onClick={handleCopy}>

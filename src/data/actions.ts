@@ -1,6 +1,7 @@
 import type { AppState } from "../types/state";
 import type { AttemptResult, ClosedVia, SubstitutionMode } from "../types/substitution";
 import type { Teacher } from "../types/teacher";
+import { SEED_TEACHER_IDS } from "./seed";
 
 /** Записує спробу; при "agreed" одразу закриває заміну (розділ 3, 5 ТЗ).
  *  Канал закриття визначається статусом заміни в момент згоди: "in-chat"
@@ -39,6 +40,18 @@ export function markDeadEnd(state: AppState, substitutionId: string): AppState {
   return {
     ...state,
     substitutions: state.substitutions.map((s) => (s.id === substitutionId ? { ...s, status: "dead-end" as const } : s)),
+  };
+}
+
+/** Видалення заміни з переліку активних — на відміну від markDeadEnd, який
+ *  лишає заміну в історії й статистиці (тупик — теж результат пошуку), це
+ *  прибирає її повністю разом зі спробами обдзвону: для замін, заведених
+ *  помилково (одрук у розборі тексту, скасований урок тощо). */
+export function deleteSubstitution(state: AppState, substitutionId: string): AppState {
+  return {
+    ...state,
+    substitutions: state.substitutions.filter((s) => s.id !== substitutionId),
+    attempts: state.attempts.filter((a) => a.substitutionId !== substitutionId),
   };
 }
 
@@ -106,4 +119,11 @@ export function deleteTeacher(state: AppState, teacherId: string): AppState {
       (a) => a.teacherId !== teacherId && !removedSubstitutionIds.has(a.substitutionId)
     ),
   };
+}
+
+/** Одноразове прибирання вигаданих (сідових) вчителів після імпорту реальної
+ *  бази. Йде тим самим шляхом, що й ручне видалення на "Профілях", —
+ *  разом із вчителем зникають його розклад, заміни й спроби. */
+export function removeSeedTeachers(state: AppState): AppState {
+  return SEED_TEACHER_IDS.reduce((acc, id) => deleteTeacher(acc, id), state);
 }

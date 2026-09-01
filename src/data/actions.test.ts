@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedState } from "./seed";
-import { createSubstitutions, deleteTeacher, markBroadcast, markDeadEnd, recordAttempt, updateTeacher } from "./actions";
+import { createSubstitutions, deleteSubstitution, deleteTeacher, markBroadcast, markDeadEnd, recordAttempt, removeSeedTeachers, updateTeacher } from "./actions";
 
 describe("recordAttempt", () => {
   it("додає спробу й лишає заміну відкритою, якщо результат не 'agreed'", () => {
@@ -168,5 +168,41 @@ describe("deleteTeacher", () => {
     const before = JSON.stringify(seedState);
     deleteTeacher(seedState, "koval-andrii");
     expect(JSON.stringify(seedState)).toBe(before);
+  });
+});
+
+describe("removeSeedTeachers", () => {
+  it("прибирає всіх сідових вчителів разом з їхніми даними, лишаючи імпортованих", () => {
+    const withReal = {
+      ...seedState,
+      teachers: [
+        ...seedState.teachers,
+        { id: "real-1", name: "Реальна Вчителька", subjects: ["хімія"], presence: [], goldenHours: [] },
+      ],
+      schedule: [
+        ...seedState.schedule,
+        { teacherId: "real-1", weekday: 2, lesson: 1, class: "9", subject: "хімія", room: "12" },
+      ],
+    };
+
+    const next = removeSeedTeachers(withReal);
+
+    expect(next.teachers.map((t) => t.id)).toEqual(["real-1"]);
+    expect(next.schedule.every((e) => e.teacherId === "real-1")).toBe(true);
+    expect(next.substitutions).toHaveLength(0);
+    expect(next.attempts).toHaveLength(0);
+  });
+});
+
+describe("deleteSubstitution", () => {
+  it("прибирає заміну зі спробами, не чіпаючи решту", () => {
+    const withAttempt = recordAttempt(seedState, "sub-1", "melnyk-taras", "refused");
+    const next = deleteSubstitution(withAttempt, "sub-1");
+
+    expect(next.substitutions.some((s) => s.id === "sub-1")).toBe(false);
+    expect(next.substitutions).toHaveLength(seedState.substitutions.length - 1);
+    expect(next.attempts.some((a) => a.substitutionId === "sub-1")).toBe(false);
+    expect(next.attempts).toHaveLength(seedState.attempts.length);
+    expect(next.teachers).toEqual(seedState.teachers);
   });
 });

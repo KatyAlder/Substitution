@@ -176,6 +176,34 @@ body {
   margin-bottom: 16px;
 }
 
+.slot-picker__row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.slot-picker__row > .slot-picker__item {
+  flex: 1;
+}
+
+.slot-picker__delete {
+  align-self: center;
+  flex: none;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font: inherit;
+  line-height: 1;
+  padding: 6px 9px;
+  cursor: pointer;
+}
+
+.slot-picker__delete:hover {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
 .slot-picker__item {
   display: flex;
   flex-direction: column;
@@ -993,4 +1021,21 @@ body {
   color: var(--warn);
   cursor: pointer;
   padding: 2px 8px;
+}
+
+.broadcast-panel__list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.broadcast-panel__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.9rem;
 }
