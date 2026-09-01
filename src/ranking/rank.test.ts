@@ -93,6 +93,41 @@ describe("слот 2 — ср, урок 2, 7-А, біологія (відсут�
   });
 });
 
+describe("явне поле teaches (клас без запису в розкладі)", () => {
+  const withMolodsha = {
+    ...seedState,
+    teachers: [
+      ...seedState.teachers,
+      {
+        id: "ivanenko-molodsha",
+        name: "Іваненко Молодша",
+        subjects: ["я досліджую світ"],
+        teaches: [{ subject: "я досліджую світ", classes: ["3-А"] }],
+        presence: [{ weekday: 2, from: "08:00", to: "14:00" }],
+        goldenHours: [],
+      },
+    ],
+  };
+
+  it("вчитель потрапляє в тир 1 за класом зі свого teaches, хоча уроків у розкладі немає", () => {
+    const result = rankCandidates(withMolodsha, { ...sub1, class: "3-А", absentTeacherId: "koval-andrii" });
+    expect(ids(result.tiers[1])).toContain("ivanenko-molodsha");
+  });
+
+  it("предмет відсутнього для позначки лабораторії береться з teaches, коли розкладу на цей слот немає", () => {
+    const infKoval = {
+      ...withMolodsha,
+      teachers: withMolodsha.teachers.map((t) =>
+        t.id === "koval-andrii" ? { ...t, teaches: [{ subject: "інформатика", classes: ["3-А"] }] } : t
+      ),
+    };
+    // вт, урок 3, клас "3-А" — жодного запису koval-andrii у розкладі на цей слот немає
+    const result = rankCandidates(infKoval, { ...sub1, class: "3-А", absentTeacherId: "koval-andrii" });
+    expect(result.subject).toBe("інформатика");
+    expect(result.labApplicable).toBe(true);
+  });
+});
+
 describe("спарені класи", () => {
   const paired = {
     ...seedState,

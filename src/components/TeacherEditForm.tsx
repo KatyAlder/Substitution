@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
+import { TeachingAssignmentsEditor, cleanAssignments, isAssignmentValid } from "./TeachingAssignmentsEditor";
 import { TimeBlockListEditor, isTimeBlockValid } from "./TimeBlockListEditor";
-import type { Teacher, TimeBlock } from "../types/teacher";
+import type { Teacher, TeachingAssignment, TimeBlock } from "../types/teacher";
 
 interface Props {
   teacher: Teacher;
@@ -15,18 +16,28 @@ export function TeacherEditForm({ teacher, onSave, onCancel }: Props) {
   const [isHourly, setIsHourly] = useState(!!teacher.isHourly);
   const [alwaysPresent, setAlwaysPresent] = useState(!!teacher.alwaysPresent);
   const [subjectsText, setSubjectsText] = useState(teacher.subjects.join(", "));
+  const [teaches, setTeaches] = useState<TeachingAssignment[]>(
+    () => teacher.teaches?.map((a) => ({ subject: a.subject, classes: [...a.classes] })) ?? []
+  );
   const [presence, setPresence] = useState<TimeBlock[]>(teacher.presence);
   const [goldenHours, setGoldenHours] = useState<TimeBlock[]>(teacher.goldenHours);
 
+  const subjectOptions = useMemo(
+    () => [...new Set(subjectsText.split(",").map((s) => s.trim()).filter(Boolean))],
+    [subjectsText]
+  );
+
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
+    if (!teaches.every(isAssignmentValid)) return false;
     if (!alwaysPresent && !presence.every(isTimeBlockValid)) return false;
     if (!goldenHours.every(isTimeBlockValid)) return false;
     return true;
-  }, [name, alwaysPresent, presence, goldenHours]);
+  }, [name, teaches, alwaysPresent, presence, goldenHours]);
 
   function handleSave() {
     if (!isValid) return;
+    const cleanedTeaches = cleanAssignments(teaches);
     onSave({
       name: name.trim(),
       phone: phone.trim() || undefined,
@@ -37,6 +48,7 @@ export function TeacherEditForm({ teacher, onSave, onCancel }: Props) {
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
+      teaches: cleanedTeaches.length > 0 ? cleanedTeaches : undefined,
       presence,
       goldenHours,
     });
@@ -78,6 +90,11 @@ export function TeacherEditForm({ teacher, onSave, onCancel }: Props) {
       <div className="parse-panel__field">
         <div className="parse-panel__label">Предмети (через кому)</div>
         <input className="parse-panel__input" value={subjectsText} onChange={(e) => setSubjectsText(e.target.value)} />
+      </div>
+
+      <div className="parse-panel__field">
+        <div className="parse-panel__label">Викладає (предмет → класи)</div>
+        <TeachingAssignmentsEditor assignments={teaches} onChange={setTeaches} subjectOptions={subjectOptions} />
       </div>
 
       {!alwaysPresent && (

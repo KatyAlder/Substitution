@@ -623,6 +623,17 @@ body {
   font-weight: 700;
 }
 
+.profile-teaches {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.profile-teaches__subject {
+  font-style: italic;
+}
+
 .profile-week {
   display: flex;
   gap: 4px;

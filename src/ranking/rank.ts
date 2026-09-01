@@ -51,9 +51,24 @@ function getBell(bells: Bell[], lesson: number): Bell | undefined {
   return bells.find((b) => b.lesson === lesson);
 }
 
-/** Спарений урок ("5-6") зараховується як викладання в кожному зі своїх класів. */
-function teachesClass(schedule: ScheduleEntry[], teacherId: string, className: string): boolean {
-  return schedule.some((e) => e.teacherId === teacherId && classesOverlap(e.class, className));
+/** Чи вчитель викладає у вказаному класі. Два незалежні джерела, об'єднані union:
+ *  явне поле `teacher.teaches` (не потребує розкладу) і записи `schedule`.
+ *  Спарена мітка ("5-6") зараховується як викладання в кожному зі своїх класів. */
+function teacherTeachesClass(teacher: Teacher, schedule: ScheduleEntry[], className: string): boolean {
+  if (teacher.teaches?.some((a) => a.classes.some((c) => classesOverlap(c, className)))) return true;
+  return schedule.some((e) => e.teacherId === teacher.id && classesOverlap(e.class, className));
+}
+
+/** Предмет уроку відсутнього — зі `schedule`, а якщо повного розкладу немає,
+ *  з його явного `teaches` за перетином класу. Потрібно лише для позначки
+ *  про лабораторію технічного предмета (розділ 9). */
+function absentSubject(
+  absentEntry: ScheduleEntry | undefined,
+  absentTeacher: Teacher | undefined,
+  className: string
+): string | undefined {
+  if (absentEntry?.subject) return absentEntry.subject;
+  return absentTeacher?.teaches?.find((a) => a.classes.some((c) => classesOverlap(c, className)))?.subject;
 }
 
 function lessonsOnWeekday(schedule: ScheduleEntry[], teacherId: string, weekday: number): number {
@@ -117,8 +132,9 @@ export function rankCandidates(state: RankState, substitution: Substitution): Ra
       e.lesson === substitution.lesson &&
       classesOverlap(e.class, substitution.class)
   );
+  const absentTeacher = state.teachers.find((t) => t.id === substitution.absentTeacherId);
 
-  const subject = absentEntry?.subject;
+  const subject = absentSubject(absentEntry, absentTeacher, substitution.class);
   const room = absentEntry?.room;
   const labApplicable = !!subject && subject in TECHNICAL_SUBJECT_ROOMS;
   const labAvailable =
@@ -140,7 +156,7 @@ export function rankCandidates(state: RankState, substitution: Substitution): Ra
       if (hasSelfConflict(state.schedule, teacher.id, weekday, substitution.lesson)) continue;
 
       const isCurator = !!teacher.curatorOf;
-      const teaches = teachesClass(state.schedule, teacher.id, substitution.class);
+      const teaches = teacherTeachesClass(teacher, state.schedule, substitution.class);
       const present = isPresentAtSlot(teacher, weekday, bell.start, bell.end);
       const tier = classifyTier(isCurator, teaches, present);
 

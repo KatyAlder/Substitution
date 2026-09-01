@@ -50,6 +50,21 @@ export function ProfileCard({ teacher, load, monthStats, monthLabel }: Props) {
       </section>
 
       <section className="profile-section">
+        <h2 className="profile-section__title">Викладає</h2>
+        {teacher.teaches && teacher.teaches.length > 0 ? (
+          <ul className="profile-teaches">
+            {teacher.teaches.map((a) => (
+              <li key={a.subject}>
+                <span className="profile-teaches__subject">{a.subject}</span>: {a.classes.join(", ")}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="screen__empty">Не позначено (заповнюється в «Редагувати»).</p>
+        )}
+      </section>
+
+      <section className="profile-section">
         <h2 className="profile-section__title">Присутність</h2>
         <div className="profile-week">
           {WEEKDAYS.map((weekday) => (
