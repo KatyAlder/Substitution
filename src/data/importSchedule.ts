@@ -12,6 +12,7 @@ function mergeTeacher(existing: Teacher | undefined, incoming: ImportTeacher): T
     isHourly: incoming.isHourly ?? existing?.isHourly,
     alwaysPresent: incoming.alwaysPresent ?? existing?.alwaysPresent,
     subjects: incoming.subjects,
+    teaches: incoming.teaches ?? existing?.teaches,
     presence: incoming.presence ?? existing?.presence ?? [],
     goldenHours: incoming.goldenHours ?? existing?.goldenHours ?? [],
   };

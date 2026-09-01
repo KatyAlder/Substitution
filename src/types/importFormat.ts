@@ -1,5 +1,5 @@
 import type { Bell, ScheduleEntry } from "./schedule";
-import type { TimeBlock } from "./teacher";
+import type { TeachingAssignment, TimeBlock } from "./teacher";
 
 export interface ImportTeacher {
   id: string;
@@ -9,6 +9,9 @@ export interface ImportTeacher {
   isHourly?: boolean;
   alwaysPresent?: boolean;
   subjects: string[];
+  /** Необов'язкове. Відсутнє в JSON — наявне значення вчителя лишається
+   *  (як phone/presence/goldenHours). Присутнє — заміщує. */
+  teaches?: TeachingAssignment[];
   presence?: TimeBlock[];
   goldenHours?: TimeBlock[];
 }

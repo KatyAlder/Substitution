@@ -33,6 +33,22 @@ function checkTimeBlockArray(v: unknown, path: string): string | null {
   return null;
 }
 
+function checkTeachingAssignment(v: unknown, path: string): string | null {
+  if (!isRecord(v)) return `${path}: очікувався об'єкт`;
+  if (!isString(v.subject)) return `${path}.subject: очікувався рядок`;
+  if (!Array.isArray(v.classes) || !v.classes.every(isString)) return `${path}.classes: очікувався масив рядків`;
+  return null;
+}
+
+function checkTeachingAssignmentArray(v: unknown, path: string): string | null {
+  if (!Array.isArray(v)) return `${path}: очікувався масив`;
+  for (let i = 0; i < v.length; i++) {
+    const err = checkTeachingAssignment(v[i], `${path}[${i}]`);
+    if (err) return err;
+  }
+  return null;
+}
+
 function checkBell(v: unknown, path: string): string | null {
   if (!isRecord(v)) return `${path}: очікувався об'єкт`;
   if (!isNumber(v.lesson)) return `${path}.lesson: очікувалося число`;
@@ -51,6 +67,10 @@ function checkTeacher(v: unknown, path: string): string | null {
   if (v.isHourly !== undefined && typeof v.isHourly !== "boolean") return `${path}.isHourly: очікувалося true/false`;
   if (v.alwaysPresent !== undefined && typeof v.alwaysPresent !== "boolean")
     return `${path}.alwaysPresent: очікувалося true/false`;
+  if (v.teaches !== undefined) {
+    const err = checkTeachingAssignmentArray(v.teaches, `${path}.teaches`);
+    if (err) return err;
+  }
   if (v.presence !== undefined) {
     const err = checkTimeBlockArray(v.presence, `${path}.presence`);
     if (err) return err;

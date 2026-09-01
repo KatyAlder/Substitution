@@ -51,6 +51,29 @@ describe("parseScheduleImport", () => {
     const result = parseScheduleImport(validJson);
     expect(result.ok).toBe(true);
   });
+
+  it("приймає вчителя з коректним teaches", () => {
+    const good = JSON.parse(validJson);
+    good.teachers[0].teaches = [{ subject: "біологія", classes: ["11", "10-А"] }];
+    const result = parseScheduleImport(JSON.stringify(good));
+    expect(result.ok).toBe(true);
+  });
+
+  it("відхиляє teaches із number замість рядка в classes — з точним шляхом", () => {
+    const bad = JSON.parse(validJson);
+    bad.teachers[0].teaches = [{ subject: "біологія", classes: [11] }];
+    const result = parseScheduleImport(JSON.stringify(bad));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("teachers[0].teaches[0].classes: очікувався масив рядків");
+  });
+
+  it("відхиляє teaches без subject — з точним шляхом", () => {
+    const bad = JSON.parse(validJson);
+    bad.teachers[0].teaches = [{ classes: ["11"] }];
+    const result = parseScheduleImport(JSON.stringify(bad));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("teachers[0].teaches[0].subject: очікувався рядок");
+  });
 });
 
 describe("summarizeImport", () => {
