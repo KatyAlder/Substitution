@@ -1,4 +1,5 @@
 import { classesOverlap } from "../ranking/classes";
+import { slotBell, slotInterval } from "../ranking/levels";
 import { toMinutes } from "../ranking/presence";
 import type { Bell, ScheduleEntry } from "../types/schedule";
 import type { Substitution, SubstitutionMode } from "../types/substitution";
@@ -18,7 +19,7 @@ export function teacherDayLessons(
   return schedule
     .filter((entry) => entry.teacherId === teacherId && entry.weekday === weekday)
     .sort((a, b) => a.lesson - b.lesson)
-    .map((entry) => ({ entry, bell: bells.find((b) => b.lesson === entry.lesson) }));
+    .map((entry) => ({ entry, bell: slotBell(bells, entry.class, entry.lesson) }));
 }
 
 export interface SlotResolution {
@@ -39,15 +40,25 @@ export function resolveBySlot(
   parsed: { lesson?: number; time?: string }
 ): SlotResolution {
   if (parsed.lesson !== undefined) {
-    return { matched: lessons.find((l) => l.entry.lesson === parsed.lesson) };
+    // Той самий номер може існувати в різних ланках (урок 2 у 3 класі й
+    // урок 2 у 9-А) — це різні уроки в різний час, тож вибір лишаємо формі.
+    const byLesson = lessons.filter((l) => l.entry.lesson === parsed.lesson);
+    return { matched: byLesson.length === 1 ? byLesson[0] : undefined };
   }
 
   if (parsed.time !== undefined) {
     const minutes = toMinutes(parsed.time);
-    const containingBell = bells.find((b) => toMinutes(b.start) <= minutes && minutes < toMinutes(b.end));
-    if (containingBell) {
-      return { matched: lessons.find((l) => l.entry.lesson === containingBell.lesson) };
+    // Шукаємо серед уроків САМОГО вчителя за їхнім власним часом — номер
+    // уроку тут не ключ, бо в кожної ланки свій розклад дзвінків.
+    const byTime = lessons.filter((l) => {
+      const iv = slotInterval(bells, l.entry.class, l.entry.lesson);
+      return iv !== undefined && toMinutes(iv.start) <= minutes && minutes < toMinutes(iv.end);
+    });
+    if (byTime.length > 0) {
+      return { matched: byTime.length === 1 ? byTime[0] : undefined };
     }
+    const containingBell = bells.find((b) => toMinutes(b.start) <= minutes && minutes < toMinutes(b.end));
+    if (containingBell) return {};
     if (bells.length === 0) return {};
     const nearestBell = [...bells].sort(
       (a, b) => Math.abs(toMinutes(a.start) - minutes) - Math.abs(toMinutes(b.start) - minutes)

@@ -99,3 +99,34 @@ describe("importSchedule — збереження профільних полі�
     expect(next.attempts).toEqual(stateWithSubs.attempts);
   });
 });
+
+describe("ключ запису розкладу враховує ланку школи", () => {
+  const base: AppState = {
+    ...baseState,
+    schedule: [{ teacherId: "t1", weekday: 1, lesson: 1, class: "3", subject: "читання", room: "каб-1" }],
+  };
+
+  it("урок 1 у 3 класі й урок 1 у 9-А того самого дня — два різні записи, не затирають одне одного", () => {
+    const next = importSchedule(base, {
+      version: 1,
+      updatedAt: "2026-09-10",
+      bells: base.bells,
+      teachers: [],
+      schedule: [{ teacherId: "t1", weekday: 1, lesson: 1, class: "9-А", subject: "фізика", room: "каб-9" }],
+    });
+    expect(next.schedule).toHaveLength(2);
+    expect(next.schedule.map((e) => e.class).sort()).toEqual(["3", "9-А"]);
+  });
+
+  it("той самий клас і номер — і далі заміщення, а не дубль", () => {
+    const next = importSchedule(base, {
+      version: 1,
+      updatedAt: "2026-09-10",
+      bells: base.bells,
+      teachers: [],
+      schedule: [{ teacherId: "t1", weekday: 1, lesson: 1, class: "3", subject: "математика", room: "каб-2" }],
+    });
+    expect(next.schedule).toHaveLength(1);
+    expect(next.schedule[0].subject).toBe("математика");
+  });
+});

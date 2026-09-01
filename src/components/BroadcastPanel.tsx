@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { dateToWeekday, weekdayName } from "../ranking/presence";
 import { GROUP_CHAT_INVITE_URL } from "../config/settings";
+import { slotBell } from "../ranking/levels";
 import type { Bell } from "../types/schedule";
 import type { Substitution } from "../types/substitution";
 import { buildBroadcastMessage } from "../whatsapp";
@@ -27,7 +28,7 @@ export function BroadcastPanel({ substitutions, bells, onMarkAllInChat, onDelete
       <h2 className="broadcast-panel__title">Завчасні заміни очікують розсилки ({substitutions.length})</h2>
       <ul className="broadcast-panel__list">
         {substitutions.map((sub) => {
-          const bell = bells.find((b) => b.lesson === sub.lesson);
+          const bell = slotBell(bells, sub.class, sub.lesson);
           return (
             <li key={sub.id} className="broadcast-panel__item">
               <span>

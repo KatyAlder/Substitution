@@ -1,4 +1,6 @@
 import type { EffectiveSlot } from "../calendar/effectiveDay";
+import { slotBell } from "../ranking/levels";
+import { toMinutes } from "../ranking/presence";
 import type { Bell } from "../types/schedule";
 import type { SubstitutionStatus } from "../types/substitution";
 import type { Teacher, TimeBlock } from "../types/teacher";
@@ -22,7 +24,14 @@ interface Props {
 }
 
 export function DayAgenda({ slots, teachers, bells, presence }: Props) {
-  const sorted = [...slots].sort((a, b) => a.lesson - b.lesson);
+  // Порядок — за реальним часом: у дні, де є уроки різних ланок, номер
+  // уроку не задає послідовності (урок 3 початкової починається об 11:45,
+  // урок 3 старшої — о 12:00).
+  const sorted = [...slots]
+    .map((slot) => ({ slot, bell: slotBell(bells, slot.class, slot.lesson) }))
+    .sort((a, b) =>
+      a.bell && b.bell ? toMinutes(a.bell.start) - toMinutes(b.bell.start) : a.slot.lesson - b.slot.lesson
+    );
   const teacherName = (id: string) => teachers.find((t) => t.id === id)?.name ?? id;
 
   return (
@@ -41,8 +50,7 @@ export function DayAgenda({ slots, teachers, bells, presence }: Props) {
       {sorted.length === 0 ? (
         <p className="screen__empty">Уроків цього дня немає.</p>
       ) : (
-        sorted.map((slot, i) => {
-          const bell = bells.find((b) => b.lesson === slot.lesson);
+        sorted.map(({ slot, bell }, i) => {
           return (
             <div
               key={`${slot.lesson}-${slot.class}-${i}`}

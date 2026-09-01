@@ -88,6 +88,12 @@ export function ImportScreen() {
                 можливо, одрук в id: {summary.unknownTeacherIds.join(", ")}
               </p>
             )}
+            {summary.bellsWithoutLevel && (
+              <p className="parse-panel__warning">
+                У дзвінках не вказано ланку (`level`). Тоді номер уроку знову стає спільним для всієї школи, і вчитель,
+                зайнятий уроком у своїй ланці, вважатиметься вільним для заміни в іншій.
+              </p>
+            )}
           </div>
         )}
 

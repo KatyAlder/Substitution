@@ -10,6 +10,7 @@ import {
 import { TeacherPicker } from "../components/TeacherPicker";
 import { setTeacherSchedule } from "../data/actions";
 import { useAppState } from "../data/AppStateContext";
+import { slotsOverlap } from "../ranking/levels";
 import { shortWeekdayName } from "../ranking/presence";
 import type { ScheduleEntry } from "../types/schedule";
 import type { Teacher } from "../types/teacher";
@@ -61,18 +62,24 @@ function ScheduleForm({ teacher }: { teacher: Teacher }) {
     [state.schedule]
   );
 
-  const duplicate = useMemo(() => {
-    const seen = new Set<string>();
-    for (const r of rows) {
-      const key = `${r.weekday}|${r.lesson}`;
-      if (seen.has(key)) return r;
-      seen.add(key);
+  // Перевіряємо накладку за ЧАСОМ, а не за номером уроку: у різних ланках
+  // однакові номери — різний час (тож "урок 2 у 3 класі" і "урок 2 у 9-А"
+  // цілком співіснують), а різні номери можуть перетинатися.
+  const overlap = useMemo(() => {
+    const valid = rows.filter(isScheduleRowValid).map((r) => ({ row: r, entry: rowToEntry(r) }));
+    for (let i = 0; i < valid.length; i++) {
+      for (let j = i + 1; j < valid.length; j++) {
+        const a = valid[i];
+        const b = valid[j];
+        if (a.entry.weekday !== b.entry.weekday) continue;
+        if (slotsOverlap(state.bells, a.entry, b.entry)) return [a.row, b.row] as const;
+      }
     }
     return null;
-  }, [rows]);
+  }, [rows, state.bells]);
 
   const dirty = useMemo(() => JSON.stringify(rows) !== JSON.stringify(stored), [rows, stored]);
-  const isValid = rows.every(isScheduleRowValid) && !duplicate;
+  const isValid = rows.every(isScheduleRowValid) && !overlap;
 
   function handleSave() {
     if (!isValid) return;
@@ -94,10 +101,10 @@ function ScheduleForm({ teacher }: { teacher: Teacher }) {
         + Додати урок
       </button>
 
-      {duplicate && (
+      {overlap && (
         <p className="parse-panel__warning">
-          {shortWeekdayName(duplicate.weekday)}, урок {duplicate.lesson} — двічі. Один день + номер уроку може бути лише
-          один запис.
+          {shortWeekdayName(overlap[0].weekday)}: урок {overlap[0].lesson} ({overlap[0].classes.join("/")}) і урок{" "}
+          {overlap[1].lesson} ({overlap[1].classes.join("/")}) відбуваються в один час — вчитель не може вести обидва.
         </p>
       )}
 

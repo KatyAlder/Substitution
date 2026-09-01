@@ -1,5 +1,6 @@
 import { MONTH_GENITIVE } from "./parser/parseRequest";
-import { dateToWeekday, weekdayName } from "./ranking/presence";
+import { slotBell } from "./ranking/levels";
+import { dateToWeekday, toMinutes, weekdayName } from "./ranking/presence";
 import type { Bell } from "./types/schedule";
 import type { Substitution } from "./types/substitution";
 import type { Teacher } from "./types/teacher";
@@ -48,12 +49,17 @@ export function buildBroadcastMessage(substitutions: Substitution[], bells: Bell
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, subs]) => {
       const header = substitutionsHeader(dateToWeekday(date), date);
+      // Сортуємо за реальним часом початку, а не за номером уроку: у різних
+      // ланках однакові номери йдуть у різний час (урок 2: 10:50 у початковій,
+      // 11:05 у старшій), тож номер не задає порядку в спільному списку.
       const lines = [...subs]
-        .sort((a, b) => a.lesson - b.lesson)
-        .map((s) => {
-          const bell = bells.find((b) => b.lesson === s.lesson);
-          const time = bell ? `${bell.start}-${bell.end}` : `урок ${s.lesson}`;
-          return `${s.class} клас - ${time}`;
+        .map((s) => ({ sub: s, bell: slotBell(bells, s.class, s.lesson) }))
+        .sort((a, b) =>
+          a.bell && b.bell ? toMinutes(a.bell.start) - toMinutes(b.bell.start) : a.sub.lesson - b.sub.lesson
+        )
+        .map(({ sub, bell }) => {
+          const time = bell ? `${bell.start}-${bell.end}` : `урок ${sub.lesson}`;
+          return `${sub.class} клас - ${time}`;
         });
       return [header, ...lines].join("\n");
     });
@@ -72,7 +78,7 @@ export function buildWholeDayMessage(
 ): string {
   const header = substitutionsHeader(weekday, date);
   const lines = [...entries]
-    .sort((a, b) => a.lesson - b.lesson)
+    .sort((a, b) => toMinutes(a.start) - toMinutes(b.start) || a.lesson - b.lesson)
     .map((e) => `${e.class} клас — ${e.start}–${e.end}`);
   return [header, ...lines].join("\n");
 }

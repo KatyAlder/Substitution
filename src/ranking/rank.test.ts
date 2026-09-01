@@ -62,8 +62,21 @@ describe("слот 1 — вт, урок 3, 11 клас, інформатика (
   });
 
   it("лабораторія технічного предмета зайнята — позначка про це, а не виключення кандидатів", () => {
-    expect(result.labApplicable).toBe(true);
-    expect(result.labAvailable).toBe(false);
+    // Сідові дані вигадані ("інформатика" / "каб-14"), а TECHNICAL_SUBJECT_ROOMS
+    // від сесії 12 містить реальні предмети й авдиторії школи — тож для цієї
+    // перевірки підміняємо предмет і кабінет слоту на справжню пару.
+    const technical = {
+      ...seedState,
+      schedule: seedState.schedule.map((e) =>
+        e.subject === "інформатика" || e.room === "каб-14"
+          ? { ...e, subject: e.subject === "інформатика" ? "Scratch" : e.subject, room: "HardLab" }
+          : e
+      ),
+    };
+    const technicalResult = rankCandidates(technical, sub1);
+
+    expect(technicalResult.labApplicable).toBe(true);
+    expect(technicalResult.labAvailable).toBe(false);
   });
 
   it("кожен кандидат зустрічається у списку рівно один раз", () => {
@@ -118,12 +131,12 @@ describe("явне поле teaches (клас без запису в розкл�
     const infKoval = {
       ...withMolodsha,
       teachers: withMolodsha.teachers.map((t) =>
-        t.id === "koval-andrii" ? { ...t, teaches: [{ subject: "інформатика", classes: ["3-А"] }] } : t
+        t.id === "koval-andrii" ? { ...t, teaches: [{ subject: "Scratch", classes: ["3-А"] }] } : t
       ),
     };
     // вт, урок 3, клас "3-А" — жодного запису koval-andrii у розкладі на цей слот немає
     const result = rankCandidates(infKoval, { ...sub1, class: "3-А", absentTeacherId: "koval-andrii" });
-    expect(result.subject).toBe("інформатика");
+    expect(result.subject).toBe("Scratch");
     expect(result.labApplicable).toBe(true);
   });
 });
@@ -153,5 +166,94 @@ describe("спарені класи", () => {
     const result = rankFor("7");
     const teaching = [...result.tiers[1], ...result.tiers[2], ...result.tiers[3]];
     expect(ids(teaching)).not.toContain("lytvyn-oleh");
+  });
+});
+
+describe("різні ланки школи — власний урок кандидата рахується за ЧАСОМ, не за номером", () => {
+  // Реальні дзвінки: збігається лише 1-й урок. Урок 3 початкової (11:45–12:30)
+  // накладається на урок 2 старшої (11:05–11:50) — при різних номерах.
+  const bells = [
+    { lesson: 1, start: "10:00", end: "10:45", level: "primary" },
+    { lesson: 2, start: "10:50", end: "11:35", level: "primary" },
+    { lesson: 3, start: "11:45", end: "12:30", level: "primary" },
+    { lesson: 1, start: "10:00", end: "10:45", level: "senior" },
+    { lesson: 2, start: "11:05", end: "11:50", level: "senior" },
+    { lesson: 3, start: "12:00", end: "12:45", level: "senior" },
+  ];
+
+  const teachers = [
+    {
+      id: "absent-primary",
+      name: "Відсутня Початкова",
+      subjects: ["читання"],
+      teaches: [{ subject: "читання", classes: ["3" ] }],
+      presence: [{ weekday: 2, from: "10:00", to: "16:00" }],
+      goldenHours: [],
+    },
+    {
+      // веде урок 2 у 9-А (11:05–11:50) — фізично зайнятий об 11:45
+      id: "busy-senior",
+      name: "Зайнятий Старша",
+      subjects: ["фізика"],
+      presence: [{ weekday: 2, from: "10:00", to: "16:00" }],
+      goldenHours: [],
+    },
+    {
+      id: "free-teacher",
+      name: "Вільний Хтось",
+      subjects: ["музика"],
+      presence: [{ weekday: 2, from: "10:00", to: "16:00" }],
+      goldenHours: [],
+    },
+  ];
+
+  const state = {
+    ...seedState,
+    bells,
+    teachers,
+    schedule: [
+      { teacherId: "absent-primary", weekday: 2, lesson: 3, class: "3", subject: "читання", room: "каб-1" },
+      { teacherId: "busy-senior", weekday: 2, lesson: 2, class: "9-А", subject: "фізика", room: "каб-9" },
+    ],
+    substitutions: [],
+    attempts: [],
+  };
+
+  // вт, урок 3 у 3 класі = 11:45–12:30
+  const slot = {
+    id: "s",
+    date: "2026-09-08",
+    lesson: 3,
+    class: "3",
+    absentTeacherId: "absent-primary",
+    mode: "urgent" as const,
+    status: "open" as const,
+    officialCalendarUpdated: false,
+  };
+
+  it("вчитель із власним уроком у ЦЕЙ ЧАС не потрапляє в кандидати, попри інший номер уроку", () => {
+    const result = rankCandidates(state, slot);
+    const all = [1, 2, 3, 4, 5, 6].flatMap((t) => ids(result.tiers[t as 1]));
+    expect(all).not.toContain("busy-senior");
+    expect(all).toContain("free-teacher");
+  });
+
+  it("на урок, що НЕ перетинається в часі, той самий вчитель доступний", () => {
+    // урок 1 у 3 класі = 10:00–10:45, урок 9-А починається об 11:05
+    const result = rankCandidates(state, { ...slot, lesson: 1 });
+    const all = [1, 2, 3, 4, 5, 6].flatMap((t) => ids(result.tiers[t as 1]));
+    expect(all).toContain("busy-senior");
+  });
+
+  it("присутність звіряється з часом СВОЄЇ ланки", () => {
+    const late = {
+      ...state,
+      teachers: teachers.map((t) =>
+        t.id === "free-teacher" ? { ...t, presence: [{ weekday: 2, from: "12:00", to: "16:00" }] } : t
+      ),
+    };
+    // 11:45–12:30 не вкладається в 12:00–16:00 → не присутній (тир 4 → 6)
+    const result = rankCandidates(late, slot);
+    expect(ids(result.tiers[6])).toContain("free-teacher");
   });
 });

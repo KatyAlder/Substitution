@@ -5,14 +5,44 @@
 export const CONSECUTIVE_REFUSALS_THRESHOLD = 3;
 
 /** Технічні предмети та кабінет(и), закріплені за ними.
+ *  Значення — з реального розкладу 2026/2027 (settings.technicalSubjects
+ *  у файлі імпорту): авдиторій дві, HardLab і SoftLab, зі своїми переліками
+ *  предметів (відкритий пункт розділу 9, який чекав вересневих даних).
  *  Якщо кабінет зайнятий іншим уроком у потрібний слот — усі кандидати
  *  в списку отримують позначку "без лабораторії" (розділ 4, це властивість
  *  слоту, а не конкретного кандидата). */
 export const TECHNICAL_SUBJECT_ROOMS: Record<string, string[]> = {
-  інформатика: ["каб-14"],
+  "ART&TECH": ["HardLab"],
+  Arduino: ["HardLab"],
+  Blender: ["SoftLab"],
+  Blockbench: ["SoftLab"],
+  Figma: ["SoftLab"],
+  Scratch: ["HardLab", "SoftLab"],
+  "Scratch + arduino": ["HardLab"],
+  TinkerCAD: ["HardLab"],
+  Футбол: ["Актова зала"],
 };
 
 /** Посилання-запрошення групового чату (розділ 7 ТЗ) — wa.me групи не підтримує,
  *  тож для "відкрити чат" потрібне справжнє посилання chat.whatsapp.com/...
  *  Порожньо, доки не з'явиться реальне у вересні — кнопка ховається сама. */
 export const GROUP_CHAT_INVITE_URL = "";
+
+/** Ланки школи. У кожної власний розклад дзвінків, тому номер уроку має сенс
+ *  ЛИШЕ всередині своєї ланки: 2-й урок початкової (10:50–11:35) і 2-й урок
+ *  старшої (11:05–11:50) — різний час. Ланка виводиться з мітки класу за
+ *  діапазоном номера ("3" → primary, "9-А" → senior, спарений "4-5" → обидві).
+ *  Середня і старша нині мають однакові часи уроків, але розведені окремо —
+ *  щоб зміна однієї з них була правкою даних, а не коду. */
+export interface SchoolLevel {
+  id: string;
+  label: string;
+  classFrom: number;
+  classTo: number;
+}
+
+export const SCHOOL_LEVELS: SchoolLevel[] = [
+  { id: "primary", label: "Початкова (1–4)", classFrom: 1, classTo: 4 },
+  { id: "middle", label: "Середня (5–8)", classFrom: 5, classTo: 8 },
+  { id: "senior", label: "Старша (9–11)", classFrom: 9, classTo: 11 },
+];

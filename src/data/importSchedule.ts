@@ -2,6 +2,7 @@ import type { ScheduleEntry } from "../types/schedule";
 import type { AppState } from "../types/state";
 import type { ImportTeacher, ScheduleImport } from "../types/importFormat";
 import type { Teacher } from "../types/teacher";
+import { levelIdsForClass } from "../ranking/levels";
 
 function mergeTeacher(existing: Teacher | undefined, incoming: ImportTeacher): Teacher {
   return {
@@ -18,8 +19,11 @@ function mergeTeacher(existing: Teacher | undefined, incoming: ImportTeacher): T
   };
 }
 
-export function scheduleKey(entry: Pick<ScheduleEntry, "teacherId" | "weekday" | "lesson">): string {
-  return `${entry.teacherId}|${entry.weekday}|${entry.lesson}`;
+/** Ключ запису розкладу. Номер уроку унікальний лише в межах ланки школи,
+ *  тож без неї урок 1 у 3 класі й урок 1 у 9-А того самого дня дали б один
+ *  ключ і затерли б одне одного при імпорті. */
+export function scheduleKey(entry: Pick<ScheduleEntry, "teacherId" | "weekday" | "lesson" | "class">): string {
+  return `${entry.teacherId}|${entry.weekday}|${entry.lesson}|${levelIdsForClass(entry.class).sort().join(",")}`;
 }
 
 function mergeSchedule(existing: ScheduleEntry[], incoming: ScheduleEntry[]): ScheduleEntry[] {

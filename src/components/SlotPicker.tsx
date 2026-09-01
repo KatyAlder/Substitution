@@ -1,4 +1,5 @@
 import { dateToWeekday, weekdayName } from "../ranking/presence";
+import { slotBell } from "../ranking/levels";
 import type { Bell } from "../types/schedule";
 import type { Substitution } from "../types/substitution";
 import type { Teacher } from "../types/teacher";
@@ -17,7 +18,7 @@ export function SlotPicker({ substitutions, teachers, bells, selectedId, onSelec
     <div className="slot-picker">
       {substitutions.map((sub) => {
         const absent = teachers.find((t) => t.id === sub.absentTeacherId);
-        const bell = bells.find((b) => b.lesson === sub.lesson);
+        const bell = slotBell(bells, sub.class, sub.lesson);
         const weekday = dateToWeekday(sub.date);
         const isSelected = sub.id === selectedId;
 

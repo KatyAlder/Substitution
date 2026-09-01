@@ -7,6 +7,7 @@ import { createSubstitutions, deleteSubstitution, markBroadcast, markDeadEnd, re
 import type { NewSubstitutionInput } from "../data/actions";
 import { useAppState } from "../data/AppStateContext";
 import { weekdayName } from "../ranking/presence";
+import { slotBell } from "../ranking/levels";
 import { TIERS, rankCandidates } from "../ranking/rank";
 import type { AttemptResult } from "../types/substitution";
 import { buildSubstitutionMessage } from "../whatsapp";
@@ -41,7 +42,7 @@ export function CandidatesScreen() {
 
   const result = useMemo(() => (selected ? rankCandidates(state, selected) : null), [state, selected]);
   const absentTeacher = selected ? state.teachers.find((t) => t.id === selected.absentTeacherId) : undefined;
-  const bell = selected ? state.bells.find((b) => b.lesson === selected.lesson) : undefined;
+  const bell = selected ? slotBell(state.bells, selected.class, selected.lesson) : undefined;
 
   const whatsappMessage = selected && result ? buildSubstitutionMessage(selected, result.weekday, bell) : "";
 

@@ -3,6 +3,7 @@ import type { Bell, ScheduleEntry } from "../types/schedule";
 import type { Attempt, Substitution } from "../types/substitution";
 import { CONSECUTIVE_REFUSALS_THRESHOLD, TECHNICAL_SUBJECT_ROOMS } from "../config/settings";
 import { classesOverlap } from "./classes";
+import { slotInterval, slotsOverlap, type TimeInterval } from "./levels";
 import { dateToWeekday, isInGoldenHour, isPresentAtSlot } from "./presence";
 
 export type Tier = 1 | 2 | 3 | 4 | 5 | 6;
@@ -47,9 +48,6 @@ export interface RankState {
   attempts: Attempt[];
 }
 
-function getBell(bells: Bell[], lesson: number): Bell | undefined {
-  return bells.find((b) => b.lesson === lesson);
-}
 
 /** Чи вчитель викладає у вказаному класі. Два незалежні джерела, об'єднані union:
  *  явне поле `teacher.teaches` (не потребує розкладу) і записи `schedule`.
@@ -75,8 +73,23 @@ function lessonsOnWeekday(schedule: ScheduleEntry[], teacherId: string, weekday:
   return schedule.filter((e) => e.teacherId === teacherId && e.weekday === weekday).length;
 }
 
-function hasSelfConflict(schedule: ScheduleEntry[], teacherId: string, weekday: number, lesson: number): boolean {
-  return schedule.some((e) => e.teacherId === teacherId && e.weekday === weekday && e.lesson === lesson);
+/** Чи в кандидата свій урок у цей самий ЧАС. Порівнювати номери уроків не
+ *  можна: у кожної ланки свій розклад дзвінків, тож урок 2 початкової
+ *  (10:50-11:35) накладається на урок 2 старшої (11:05-11:50) при різних
+ *  номерах — і навпаки, однакові номери можуть не перетинатися зовсім. */
+function hasSelfConflict(
+  schedule: ScheduleEntry[],
+  bells: Bell[],
+  teacherId: string,
+  weekday: number,
+  slot: { class: string; lesson: number }
+): boolean {
+  return schedule.some(
+    (e) =>
+      e.teacherId === teacherId &&
+      e.weekday === weekday &&
+      slotsOverlap(bells, { class: e.class, lesson: e.lesson }, slot)
+  );
 }
 
 /** Тир визначається виключно трьома ознаками — куратор / викладає / присутній.
@@ -123,7 +136,8 @@ function consecutiveRefusals(attempts: Attempt[], teacherId: string): number {
 
 export function rankCandidates(state: RankState, substitution: Substitution): RankingResult {
   const weekday = dateToWeekday(substitution.date);
-  const bell = getBell(state.bells, substitution.lesson);
+  const slot = { class: substitution.class, lesson: substitution.lesson };
+  const interval: TimeInterval | undefined = slotInterval(state.bells, substitution.class, substitution.lesson);
 
   const absentEntry = state.schedule.find(
     (e) =>
@@ -144,23 +158,23 @@ export function rankCandidates(state: RankState, substitution: Substitution): Ra
       (e) =>
         e.room === room &&
         e.weekday === weekday &&
-        e.lesson === substitution.lesson &&
-        e.teacherId !== substitution.absentTeacherId
+        e.teacherId !== substitution.absentTeacherId &&
+        slotsOverlap(state.bells, { class: e.class, lesson: e.lesson }, slot)
     );
 
   const tiers: Record<Tier, RankedCandidate[]> = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
 
-  if (bell) {
+  if (interval) {
     for (const teacher of state.teachers) {
       if (teacher.id === substitution.absentTeacherId) continue;
-      if (hasSelfConflict(state.schedule, teacher.id, weekday, substitution.lesson)) continue;
+      if (hasSelfConflict(state.schedule, state.bells, teacher.id, weekday, slot)) continue;
 
       const isCurator = !!teacher.curatorOf;
       const teaches = teacherTeachesClass(teacher, state.schedule, substitution.class);
-      const present = isPresentAtSlot(teacher, weekday, bell.start, bell.end);
+      const present = isPresentAtSlot(teacher, weekday, interval.start, interval.end);
       const tier = classifyTier(isCurator, teaches, present);
 
-      const inGoldenHour = isInGoldenHour(teacher, weekday, bell.start, bell.end);
+      const inGoldenHour = isInGoldenHour(teacher, weekday, interval.start, interval.end);
       const refusalsStreak = consecutiveRefusals(state.attempts, teacher.id);
       const refusalsBonus = refusalsStreak >= CONSECUTIVE_REFUSALS_THRESHOLD;
       const bonusCount = (inGoldenHour ? 1 : 0) + (refusalsBonus ? 1 : 0);

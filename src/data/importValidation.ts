@@ -1,6 +1,7 @@
 import type { ScheduleImport } from "../types/importFormat";
 import type { AppState } from "../types/state";
 import { scheduleKey } from "./importSchedule";
+import { SCHOOL_LEVELS } from "../config/settings";
 
 export type ImportParseResult = { ok: true; data: ScheduleImport } | { ok: false; error: string };
 
@@ -49,11 +50,17 @@ function checkTeachingAssignmentArray(v: unknown, path: string): string | null {
   return null;
 }
 
+const LEVEL_IDS = SCHOOL_LEVELS.map((l) => l.id);
+
 function checkBell(v: unknown, path: string): string | null {
   if (!isRecord(v)) return `${path}: очікувався об'єкт`;
   if (!isNumber(v.lesson)) return `${path}.lesson: очікувалося число`;
   if (!isString(v.start)) return `${path}.start: очікувався рядок`;
   if (!isString(v.end)) return `${path}.end: очікувався рядок`;
+  if (v.level !== undefined) {
+    if (!isString(v.level)) return `${path}.level: очікувався рядок`;
+    if (!LEVEL_IDS.includes(v.level)) return `${path}.level: невідома ланка "${v.level}" (очікувалось: ${LEVEL_IDS.join(", ")})`;
+  }
   return null;
 }
 
@@ -134,6 +141,10 @@ export interface ImportSummary {
   updatedScheduleCount: number;
   /** teacherId у schedule, якого немає ні в наявних вчителях, ні серед вчителів у самому імпорті — типова ознака одруку. */
   unknownTeacherIds: string[];
+  /** У жодного дзвінка немає `level`, хоча ланок кілька — тоді номер уроку
+   *  знову стає глобальним, і вчитель, зайнятий у своїй ланці, вважатиметься
+   *  вільним у чужій. Попередження, не блокування. */
+  bellsWithoutLevel: boolean;
 }
 
 /** Прев'ю "що зміниться" перед підтвердженням — рахує нове/оновлене, не
@@ -159,5 +170,7 @@ export function summarizeImport(state: AppState, data: ScheduleImport): ImportSu
     new Set(data.schedule.filter((e) => !knownTeacherIds.has(e.teacherId)).map((e) => e.teacherId))
   );
 
-  return { newTeachers, updatedTeachers, newScheduleCount, updatedScheduleCount, unknownTeacherIds };
+  const bellsWithoutLevel = data.bells.length > 0 && data.bells.every((b) => b.level === undefined);
+
+  return { newTeachers, updatedTeachers, newScheduleCount, updatedScheduleCount, unknownTeacherIds, bellsWithoutLevel };
 }
