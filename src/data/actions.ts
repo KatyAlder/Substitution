@@ -1,3 +1,4 @@
+import type { ScheduleEntry } from "../types/schedule";
 import type { AppState } from "../types/state";
 import type { AttemptResult, ClosedVia, SubstitutionMode } from "../types/substitution";
 import type { Teacher } from "../types/teacher";
@@ -98,6 +99,20 @@ export function updateTeacher(state: AppState, teacherId: string, patch: Omit<Pa
     ...state,
     teachers: state.teachers.map((t) => (t.id === teacherId ? { ...t, ...patch } : t)),
   };
+}
+
+/** Ручне редагування базового тижневого розкладу одного вчителя (вкладка
+ *  "Розклад"). Замінює ВСІ записи цього вчителя на передані — форма веде
+ *  повний список його уроків. Унікальність (weekday, lesson) — інваріант
+ *  scheduleKey з importSchedule.ts — гарантує форма перед збереженням.
+ *  Записи інших учителів, дзвінки, заміни й спроби не чіпає. */
+export function setTeacherSchedule(
+  state: AppState,
+  teacherId: string,
+  entries: Omit<ScheduleEntry, "teacherId">[]
+): AppState {
+  const others = state.schedule.filter((e) => e.teacherId !== teacherId);
+  return { ...state, schedule: [...others, ...entries.map((e) => ({ ...e, teacherId }))] };
 }
 
 /** Видалення вчителя — повне очищення (свідомий вибір Kate, а не

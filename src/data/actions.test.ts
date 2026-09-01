@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { seedState } from "./seed";
-import { createSubstitutions, deleteSubstitution, deleteTeacher, markBroadcast, markDeadEnd, recordAttempt, removeSeedTeachers, updateTeacher } from "./actions";
+import { createSubstitutions, deleteSubstitution, deleteTeacher, markBroadcast, markDeadEnd, recordAttempt, removeSeedTeachers, setTeacherSchedule, updateTeacher } from "./actions";
+import { classesOverlap } from "../ranking/classes";
 
 describe("recordAttempt", () => {
   it("додає спробу й лишає заміну відкритою, якщо результат не 'agreed'", () => {
@@ -131,6 +132,42 @@ describe("updateTeacher", () => {
   it("не мутує вихідний стан", () => {
     const before = JSON.stringify(seedState);
     updateTeacher(seedState, "melnyk-taras", { name: "X" });
+    expect(JSON.stringify(seedState)).toBe(before);
+  });
+});
+
+describe("setTeacherSchedule", () => {
+  it("замінює всі записи цільового вчителя, чужих не чіпає", () => {
+    const next = setTeacherSchedule(seedState, "tkachenko-ihor", [
+      { weekday: 1, lesson: 2, class: "10-А", subject: "інформатика", room: "каб-14" },
+    ]);
+
+    const mine = next.schedule.filter((e) => e.teacherId === "tkachenko-ihor");
+    expect(mine).toEqual([
+      { teacherId: "tkachenko-ihor", weekday: 1, lesson: 2, class: "10-А", subject: "інформатика", room: "каб-14" },
+    ]);
+
+    const others = next.schedule.filter((e) => e.teacherId !== "tkachenko-ihor");
+    expect(others).toEqual(seedState.schedule.filter((e) => e.teacherId !== "tkachenko-ihor"));
+  });
+
+  it("порожній масив прибирає весь розклад вчителя", () => {
+    const next = setTeacherSchedule(seedState, "tkachenko-ihor", []);
+    expect(next.schedule.some((e) => e.teacherId === "tkachenko-ihor")).toBe(false);
+  });
+
+  it("зберігає спарену мітку так, що обидва класи перетинаються", () => {
+    const next = setTeacherSchedule(seedState, "tkachenko-ihor", [
+      { weekday: 4, lesson: 1, class: "9-А/9-Б", subject: "інформатика", room: "каб-14" },
+    ]);
+    const entry = next.schedule.find((e) => e.teacherId === "tkachenko-ihor")!;
+    expect(classesOverlap(entry.class, "9-А")).toBe(true);
+    expect(classesOverlap(entry.class, "9-Б")).toBe(true);
+  });
+
+  it("не мутує вихідний стан", () => {
+    const before = JSON.stringify(seedState);
+    setTeacherSchedule(seedState, "tkachenko-ihor", []);
     expect(JSON.stringify(seedState)).toBe(before);
   });
 });

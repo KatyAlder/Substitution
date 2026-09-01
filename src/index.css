@@ -1023,6 +1023,76 @@ body {
   padding: 2px 8px;
 }
 
+/* --- редактор розкладу вчителя (вкладка "Розклад") --- */
+
+.schedule-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.schedule-editor__row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.schedule-editor__row--invalid {
+  border-color: var(--warn);
+}
+
+.schedule-editor__line,
+.schedule-editor__classes,
+.schedule-editor__class-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.schedule-editor__row select,
+.schedule-editor__row input {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: inherit;
+}
+
+.schedule-editor__lesson {
+  width: 4rem;
+}
+
+.schedule-editor__class {
+  width: 6rem;
+}
+
+.schedule-editor__paired {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-dim);
+}
+
+.schedule-editor__remove {
+  font: inherit;
+  font-size: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--warn);
+  cursor: pointer;
+  padding: 2px 8px;
+}
+
 .broadcast-panel__list {
   list-style: none;
   margin: 0 0 10px;

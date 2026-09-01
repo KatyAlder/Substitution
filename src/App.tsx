@@ -3,10 +3,11 @@ import { CalendarScreen } from "./screens/CalendarScreen";
 import { CandidatesScreen } from "./screens/CandidatesScreen";
 import { ImportScreen } from "./screens/ImportScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
+import { ScheduleScreen } from "./screens/ScheduleScreen";
 import { StatisticsScreen } from "./screens/StatisticsScreen";
 import { SyncBar } from "./sync/SyncBar";
 
-type Tab = "candidates" | "calendar" | "profiles" | "statistics" | "import";
+type Tab = "candidates" | "calendar" | "profiles" | "statistics" | "schedule" | "import";
 
 function App() {
   const [tab, setTab] = useState<Tab>("candidates");
@@ -45,6 +46,13 @@ function App() {
         </button>
         <button
           type="button"
+          className={`tab-nav__item${tab === "schedule" ? " tab-nav__item--active" : ""}`}
+          onClick={() => setTab("schedule")}
+        >
+          Розклад
+        </button>
+        <button
+          type="button"
           className={`tab-nav__item${tab === "import" ? " tab-nav__item--active" : ""}`}
           onClick={() => setTab("import")}
         >
@@ -56,6 +64,7 @@ function App() {
       {tab === "calendar" && <CalendarScreen />}
       {tab === "profiles" && <ProfileScreen />}
       {tab === "statistics" && <StatisticsScreen />}
+      {tab === "schedule" && <ScheduleScreen />}
       {tab === "import" && <ImportScreen />}
     </>
   );
