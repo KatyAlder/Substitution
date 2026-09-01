@@ -5,23 +5,60 @@ import type { Substitution } from "./types/substitution";
 import type { Teacher } from "./types/teacher";
 
 export function buildSubstitutionMessage(substitution: Substitution, weekday: number, bell: Bell | undefined): string {
-  const time = bell ? ` (${bell.start}–${bell.end})` : "";
+  const lesson = bell ? `${bell.start}–${bell.end}` : `${substitution.lesson}`;
   return (
     `Привіт! Потрібна заміна: ${weekdayName(weekday)}, ${substitution.date}, ` +
-    `урок ${substitution.lesson}${time}, ${substitution.class} клас. ` +
+    `урок ${lesson}, ${substitution.class} клас. ` +
     `Підкажи, будь ласка, чи зможеш ти її взяти?`
   );
 }
 
+/** Форми днів тижня після "Заміни на …" (знахідний відмінок). Індекс 0 = понеділок. */
+const WEEKDAY_ACCUSATIVE = [
+  "понеділок",
+  "вівторок",
+  "середу",
+  "четвер",
+  "п'ятницю",
+  "суботу",
+  "неділю",
+];
+
+/** "Заміни на середу, 2 вересня" — спільний заголовок для розсилки й "на весь день". */
+function substitutionsHeader(weekday: number, date: string): string {
+  const [, monthStr, dayStr] = date.split("-");
+  const monthName = MONTH_GENITIVE[Number(monthStr) - 1];
+  const dayName = WEEKDAY_ACCUSATIVE[weekday - 1] ?? "?";
+  return `Заміни на ${dayName}, ${Number(dayStr)} ${monthName}`;
+}
+
 /** Розсилка "списком" для завчасних замін (розділ 1, 5, 6 ТЗ) — одне повідомлення
- *  на всі поточні завчасні заміни, що ще не в чаті. */
+ *  на всі поточні завчасні заміни, що ще не в чаті. Заміни групуються за датою
+ *  (зазвичай одна, але завчасні можуть бути на різні дні); рядки в межах дати —
+ *  за номером уроку. */
 export function buildBroadcastMessage(substitutions: Substitution[], bells: Bell[]): string {
-  const lines = substitutions.map((s) => {
-    const bell = bells.find((b) => b.lesson === s.lesson);
-    const time = bell ? ` (${bell.start}–${bell.end})` : "";
-    return `- ${weekdayName(dateToWeekday(s.date))}, ${s.date}, ${s.class} клас, урок ${s.lesson}${time}`;
-  });
-  return `Потрібен доброволець:\n${lines.join("\n")}`;
+  const byDate = new Map<string, Substitution[]>();
+  for (const s of substitutions) {
+    const list = byDate.get(s.date) ?? [];
+    list.push(s);
+    byDate.set(s.date, list);
+  }
+
+  const blocks = [...byDate.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, subs]) => {
+      const header = substitutionsHeader(dateToWeekday(date), date);
+      const lines = [...subs]
+        .sort((a, b) => a.lesson - b.lesson)
+        .map((s) => {
+          const bell = bells.find((b) => b.lesson === s.lesson);
+          const time = bell ? `${bell.start}-${bell.end}` : `урок ${s.lesson}`;
+          return `${s.class} клас - ${time}`;
+        });
+      return [header, ...lines].join("\n");
+    });
+
+  return blocks.join("\n\n");
 }
 
 /** Прев'ю тексту для сценарію "на весь день" (розділ 6 ТЗ) — дата в
@@ -33,9 +70,7 @@ export function buildWholeDayMessage(
   weekday: number,
   entries: { class: string; lesson: number; start: string; end: string }[]
 ): string {
-  const [, monthStr, dayStr] = date.split("-");
-  const monthName = MONTH_GENITIVE[Number(monthStr) - 1];
-  const header = `Заміни на ${weekdayName(weekday)}, ${Number(dayStr)} ${monthName}`;
+  const header = substitutionsHeader(weekday, date);
   const lines = [...entries]
     .sort((a, b) => a.lesson - b.lesson)
     .map((e) => `${e.class} клас — ${e.start}–${e.end}`);

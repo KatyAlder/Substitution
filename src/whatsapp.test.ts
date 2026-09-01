@@ -1,21 +1,45 @@
 import { describe, expect, it } from "vitest";
 import { seedState } from "./data/seed";
+import type { Substitution } from "./types/substitution";
 import { buildBroadcastMessage, buildWholeDayMessage } from "./whatsapp";
 
 describe("buildBroadcastMessage", () => {
-  it("формує список одним повідомленням для кількох завчасних замін (розділ 1, 5, 6 ТЗ)", () => {
-    const sub2 = seedState.substitutions.find((s) => s.id === "sub-2")!;
-    const message = buildBroadcastMessage([sub2], seedState.bells);
-
-    expect(message).toBe("Потрібен доброволець:\n- середа, 2026-09-09, 7-А клас, урок 2 (09:55–10:40)");
+  const bells = seedState.bells;
+  const sub = (over: Partial<Substitution>): Substitution => ({
+    id: "x",
+    date: "2026-09-02",
+    lesson: 2,
+    class: "2",
+    absentTeacherId: "t",
+    mode: "planned",
+    status: "open",
+    officialCalendarUpdated: false,
+    ...over,
   });
 
-  it("кілька замін — кожна своїм рядком", () => {
-    const sub1 = seedState.substitutions.find((s) => s.id === "sub-1")!;
-    const sub2 = seedState.substitutions.find((s) => s.id === "sub-2")!;
-    const message = buildBroadcastMessage([sub1, sub2], seedState.bells);
+  it("одна дата — спільний заголовок + рядки за номером уроку", () => {
+    const message = buildBroadcastMessage(
+      [sub({ id: "a", lesson: 4, class: "2" }), sub({ id: "b", lesson: 2, class: "3-4" })],
+      bells
+    );
 
-    expect(message.split("\n")).toHaveLength(3); // заголовок + 2 рядки
+    expect(message).toBe(
+      "Заміни на середу, 2 вересня\n3-4 клас - 09:55-10:40\n2 клас - 11:55-12:40"
+    );
+  });
+
+  it("різні дати — окремий блок на кожну, розділені порожнім рядком", () => {
+    const message = buildBroadcastMessage(
+      [
+        sub({ id: "a", date: "2026-09-09", lesson: 2, class: "7-А" }),
+        sub({ id: "b", date: "2026-09-08", lesson: 3, class: "11" }),
+      ],
+      bells
+    );
+
+    expect(message).toBe(
+      "Заміни на вівторок, 8 вересня\n11 клас - 10:50-11:35\n\nЗаміни на середу, 9 вересня\n7-А клас - 09:55-10:40"
+    );
   });
 });
 
