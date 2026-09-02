@@ -26,6 +26,8 @@ export function teacherMonthlyRows(state: AppState, month: string): TeacherMonth
 export interface DeadEndRow {
   id: string;
   date: string;
+  start: string;
+  end: string;
   lesson: number;
   class: string;
   absentTeacherName: string;
@@ -39,6 +41,8 @@ export function deadEndsForMonth(state: AppState, month: string): DeadEndRow[] {
     .map((s) => ({
       id: s.id,
       date: s.date,
+      start: s.start,
+      end: s.end,
       lesson: s.lesson,
       class: s.class,
       absentTeacherName: state.teachers.find((t) => t.id === s.absentTeacherId)?.name ?? s.absentTeacherId,

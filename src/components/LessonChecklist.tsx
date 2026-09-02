@@ -9,7 +9,7 @@ export interface LessonChecklistItem {
 
 interface Props {
   items: LessonChecklistItem[];
-  onToggle: (lessonNumber: number) => void;
+  onToggle: (start: string) => void;
 }
 
 export function LessonChecklist({ items, onToggle }: Props) {
@@ -24,11 +24,11 @@ export function LessonChecklist({ items, onToggle }: Props) {
             type="checkbox"
             checked={checked && !conflict}
             disabled={!!conflict}
-            onChange={() => onToggle(lesson.entry.lesson)}
+            onChange={() => onToggle(lesson.entry.start)}
           />
           <span>
             урок {lesson.entry.lesson}
-            {lesson.bell ? ` (${lesson.bell.start}–${lesson.bell.end})` : ""} · {lesson.entry.class} клас ·{" "}
+            {` (${lesson.entry.start}–${lesson.entry.end})`} · {lesson.entry.class} клас ·{" "}
             {lesson.entry.subject}
             {conflict && <span className="lesson-checklist__warning"> — вже є заміна (статус: {conflict.status})</span>}
           </span>

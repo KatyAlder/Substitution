@@ -1,25 +1,20 @@
 import { classesOverlap } from "../ranking/classes";
-import { slotBell, slotInterval } from "../ranking/levels";
+import { intervalsOverlap } from "../ranking/levels";
 import { toMinutes } from "../ranking/presence";
 import type { Bell, ScheduleEntry } from "../types/schedule";
 import type { Substitution, SubstitutionMode } from "../types/substitution";
 
 export interface DayLesson {
   entry: ScheduleEntry;
-  bell?: Bell;
 }
 
-/** Уроки вчителя в конкретний weekday, відсортовані за номером уроку. */
-export function teacherDayLessons(
-  schedule: ScheduleEntry[],
-  bells: Bell[],
-  teacherId: string,
-  weekday: number
-): DayLesson[] {
+/** Уроки вчителя в конкретний weekday, відсортовані за ЧАСОМ початку
+ *  (номер уроку порядку не задає — у різних ланках нумерація своя). */
+export function teacherDayLessons(schedule: ScheduleEntry[], teacherId: string, weekday: number): DayLesson[] {
   return schedule
     .filter((entry) => entry.teacherId === teacherId && entry.weekday === weekday)
-    .sort((a, b) => a.lesson - b.lesson)
-    .map((entry) => ({ entry, bell: slotBell(bells, entry.class, entry.lesson) }));
+    .sort((a, b) => toMinutes(a.start) - toMinutes(b.start))
+    .map((entry) => ({ entry }));
 }
 
 export interface SlotResolution {
@@ -48,12 +43,10 @@ export function resolveBySlot(
 
   if (parsed.time !== undefined) {
     const minutes = toMinutes(parsed.time);
-    // Шукаємо серед уроків САМОГО вчителя за їхнім власним часом — номер
-    // уроку тут не ключ, бо в кожної ланки свій розклад дзвінків.
-    const byTime = lessons.filter((l) => {
-      const iv = slotInterval(bells, l.entry.class, l.entry.lesson);
-      return iv !== undefined && toMinutes(iv.start) <= minutes && minutes < toMinutes(iv.end);
-    });
+    // Шукаємо серед уроків САМОГО вчителя за їхнім власним часом.
+    const byTime = lessons.filter(
+      (l) => toMinutes(l.entry.start) <= minutes && minutes < toMinutes(l.entry.end)
+    );
     if (byTime.length > 0) {
       return { matched: byTime.length === 1 ? byTime[0] : undefined };
     }
@@ -69,15 +62,17 @@ export function resolveBySlot(
   return {};
 }
 
-/** Заміна на цей date/lesson/class уже існує (будь-який статус) —
+/** Заміна на цей самий час і клас уже існує (будь-який статус) —
  *  попередити, а не створювати мовчки дублікат (розділ 6 ТЗ). */
 export function findConflict(
   substitutions: Substitution[],
   date: string,
-  lesson: number,
+  interval: { start: string; end: string },
   className: string
 ): Substitution | undefined {
-  return substitutions.find((s) => s.date === date && s.lesson === lesson && classesOverlap(s.class, className));
+  return substitutions.find(
+    (s) => s.date === date && intervalsOverlap(s, interval) && classesOverlap(s.class, className)
+  );
 }
 
 /** Дата = сьогодні → термінова, інакше завчасна. Лише дефолт для форми —

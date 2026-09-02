@@ -147,12 +147,12 @@ describe("спарені класи", () => {
     schedule: [
       ...seedState.schedule,
       // Спарений урок: 5 і 6 класи разом в одного вчителя.
-      { teacherId: "lytvyn-oleh", weekday: 2, lesson: 3, class: "5-6", subject: "фізика", room: "каб-7" },
+      { teacherId: "lytvyn-oleh", weekday: 2, start: "10:50", end: "11:35", lesson: 3, class: "5-6", subject: "фізика", room: "каб-7" },
     ],
   };
 
   function rankFor(className: string) {
-    return rankCandidates(paired, { ...sub1, class: className, absentTeacherId: "koval-andrii", lesson: 4 });
+    return rankCandidates(paired, { ...sub1, class: className, absentTeacherId: "koval-andrii", start: "11:55", end: "12:40", lesson: 4 });
   }
 
   it("вчитель спареного уроку вважається таким, що викладає в кожному з класів", () => {
@@ -170,28 +170,20 @@ describe("спарені класи", () => {
 });
 
 describe("різні ланки школи — власний урок кандидата рахується за ЧАСОМ, не за номером", () => {
-  // Реальні дзвінки: збігається лише 1-й урок. Урок 3 початкової (11:45–12:30)
-  // накладається на урок 2 старшої (11:05–11:50) — при різних номерах.
-  const bells = [
-    { lesson: 1, start: "10:00", end: "10:45", level: "primary" },
-    { lesson: 2, start: "10:50", end: "11:35", level: "primary" },
-    { lesson: 3, start: "11:45", end: "12:30", level: "primary" },
-    { lesson: 1, start: "10:00", end: "10:45", level: "senior" },
-    { lesson: 2, start: "11:05", end: "11:50", level: "senior" },
-    { lesson: 3, start: "12:00", end: "12:45", level: "senior" },
-  ];
-
+  // Реальні дзвінки: у початковій урок 2 = 10:50-11:35, у старшій урок 2 =
+  // 11:05-11:50. Номери однакові, час різний — і навпаки: урок 3 початкової
+  // (11:45-12:30) накладається на урок 2 старшої при різних номерах.
   const teachers = [
     {
       id: "absent-primary",
       name: "Відсутня Початкова",
       subjects: ["читання"],
-      teaches: [{ subject: "читання", classes: ["3" ] }],
+      teaches: [{ subject: "читання", classes: ["3"] }],
       presence: [{ weekday: 2, from: "10:00", to: "16:00" }],
       goldenHours: [],
     },
     {
-      // веде урок 2 у 9-А (11:05–11:50) — фізично зайнятий об 11:45
+      // веде урок 2 у 9-А (11:05-11:50) — фізично зайнятий об 11:45
       id: "busy-senior",
       name: "Зайнятий Старша",
       subjects: ["фізика"],
@@ -209,20 +201,21 @@ describe("різні ланки школи — власний урок канд�
 
   const state = {
     ...seedState,
-    bells,
     teachers,
     schedule: [
-      { teacherId: "absent-primary", weekday: 2, lesson: 3, class: "3", subject: "читання", room: "каб-1" },
-      { teacherId: "busy-senior", weekday: 2, lesson: 2, class: "9-А", subject: "фізика", room: "каб-9" },
+      { teacherId: "absent-primary", weekday: 2, start: "11:45", end: "12:30", lesson: 3, class: "3", subject: "читання", room: "каб-1" },
+      { teacherId: "busy-senior", weekday: 2, start: "11:05", end: "11:50", lesson: 2, class: "9-А", subject: "фізика", room: "каб-9" },
     ],
     substitutions: [],
     attempts: [],
   };
 
-  // вт, урок 3 у 3 класі = 11:45–12:30
+  // вт, урок 3 у 3 класі = 11:45-12:30
   const slot = {
     id: "s",
     date: "2026-09-08",
+    start: "11:45",
+    end: "12:30",
     lesson: 3,
     class: "3",
     absentTeacherId: "absent-primary",
@@ -231,29 +224,31 @@ describe("різні ланки школи — власний урок канд�
     officialCalendarUpdated: false,
   };
 
+  function allCandidates(sub: typeof slot) {
+    const result = rankCandidates(state, sub);
+    return [1, 2, 3, 4, 5, 6].flatMap((t) => ids(result.tiers[t as 1]));
+  }
+
   it("вчитель із власним уроком у ЦЕЙ ЧАС не потрапляє в кандидати, попри інший номер уроку", () => {
-    const result = rankCandidates(state, slot);
-    const all = [1, 2, 3, 4, 5, 6].flatMap((t) => ids(result.tiers[t as 1]));
+    // 11:45-12:30 проти 11:05-11:50 — спільні лише 5 хвилин, але це конфлікт
+    const all = allCandidates(slot);
     expect(all).not.toContain("busy-senior");
     expect(all).toContain("free-teacher");
   });
 
   it("на урок, що НЕ перетинається в часі, той самий вчитель доступний", () => {
-    // урок 1 у 3 класі = 10:00–10:45, урок 9-А починається об 11:05
-    const result = rankCandidates(state, { ...slot, lesson: 1 });
-    const all = [1, 2, 3, 4, 5, 6].flatMap((t) => ids(result.tiers[t as 1]));
+    const all = allCandidates({ ...slot, start: "10:00", end: "10:45", lesson: 1 });
     expect(all).toContain("busy-senior");
   });
 
-  it("присутність звіряється з часом СВОЄЇ ланки", () => {
+  it("присутність звіряється з реальним часом слоту", () => {
     const late = {
       ...state,
       teachers: teachers.map((t) =>
         t.id === "free-teacher" ? { ...t, presence: [{ weekday: 2, from: "12:00", to: "16:00" }] } : t
       ),
     };
-    // 11:45–12:30 не вкладається в 12:00–16:00 → не присутній (тир 4 → 6)
-    const result = rankCandidates(late, slot);
-    expect(ids(result.tiers[6])).toContain("free-teacher");
+    // 11:45-12:30 не вкладається в 12:00-16:00 -> не присутній (тир 4 -> 6)
+    expect(ids(rankCandidates(late, slot).tiers[6])).toContain("free-teacher");
   });
 });

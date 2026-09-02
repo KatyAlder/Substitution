@@ -3,7 +3,7 @@ import type { Bell, ScheduleEntry } from "../types/schedule";
 import type { Attempt, Substitution } from "../types/substitution";
 import { CONSECUTIVE_REFUSALS_THRESHOLD, TECHNICAL_SUBJECT_ROOMS } from "../config/settings";
 import { classesOverlap } from "./classes";
-import { slotInterval, slotsOverlap, type TimeInterval } from "./levels";
+import { intervalsOverlap, type TimeInterval } from "./levels";
 import { dateToWeekday, isInGoldenHour, isPresentAtSlot } from "./presence";
 
 export type Tier = 1 | 2 | 3 | 4 | 5 | 6;
@@ -73,22 +73,17 @@ function lessonsOnWeekday(schedule: ScheduleEntry[], teacherId: string, weekday:
   return schedule.filter((e) => e.teacherId === teacherId && e.weekday === weekday).length;
 }
 
-/** Чи в кандидата свій урок у цей самий ЧАС. Порівнювати номери уроків не
- *  можна: у кожної ланки свій розклад дзвінків, тож урок 2 початкової
- *  (10:50-11:35) накладається на урок 2 старшої (11:05-11:50) при різних
- *  номерах — і навпаки, однакові номери можуть не перетинатися зовсім. */
+/** Чи в кандидата свій урок у цей самий ЧАС. Номери уроків для цього
+ *  непридатні: у кожної ланки школи свій розклад дзвінків, тож однакові
+ *  номери означають різний час, а різні — можуть перетинатися. */
 function hasSelfConflict(
   schedule: ScheduleEntry[],
-  bells: Bell[],
   teacherId: string,
   weekday: number,
-  slot: { class: string; lesson: number }
+  interval: TimeInterval
 ): boolean {
   return schedule.some(
-    (e) =>
-      e.teacherId === teacherId &&
-      e.weekday === weekday &&
-      slotsOverlap(bells, { class: e.class, lesson: e.lesson }, slot)
+    (e) => e.teacherId === teacherId && e.weekday === weekday && intervalsOverlap(e, interval)
   );
 }
 
@@ -136,14 +131,13 @@ function consecutiveRefusals(attempts: Attempt[], teacherId: string): number {
 
 export function rankCandidates(state: RankState, substitution: Substitution): RankingResult {
   const weekday = dateToWeekday(substitution.date);
-  const slot = { class: substitution.class, lesson: substitution.lesson };
-  const interval: TimeInterval | undefined = slotInterval(state.bells, substitution.class, substitution.lesson);
+  const interval: TimeInterval = { start: substitution.start, end: substitution.end };
 
   const absentEntry = state.schedule.find(
     (e) =>
       e.teacherId === substitution.absentTeacherId &&
       e.weekday === weekday &&
-      e.lesson === substitution.lesson &&
+      e.start === substitution.start &&
       classesOverlap(e.class, substitution.class)
   );
   const absentTeacher = state.teachers.find((t) => t.id === substitution.absentTeacherId);
@@ -159,15 +153,15 @@ export function rankCandidates(state: RankState, substitution: Substitution): Ra
         e.room === room &&
         e.weekday === weekday &&
         e.teacherId !== substitution.absentTeacherId &&
-        slotsOverlap(state.bells, { class: e.class, lesson: e.lesson }, slot)
+        intervalsOverlap(e, interval)
     );
 
   const tiers: Record<Tier, RankedCandidate[]> = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
 
-  if (interval) {
+  {
     for (const teacher of state.teachers) {
       if (teacher.id === substitution.absentTeacherId) continue;
-      if (hasSelfConflict(state.schedule, state.bells, teacher.id, weekday, slot)) continue;
+      if (hasSelfConflict(state.schedule, teacher.id, weekday, interval)) continue;
 
       const isCurator = !!teacher.curatorOf;
       const teaches = teacherTeachesClass(teacher, state.schedule, substitution.class);

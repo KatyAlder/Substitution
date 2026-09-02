@@ -1,6 +1,6 @@
 import type { ScheduleImport } from "../types/importFormat";
 import type { AppState } from "../types/state";
-import { scheduleKey } from "./importSchedule";
+import { importEntryTimes, scheduleKey } from "./importSchedule";
 import { SCHOOL_LEVELS } from "../config/settings";
 
 export type ImportParseResult = { ok: true; data: ScheduleImport } | { ok: false; error: string };
@@ -97,6 +97,8 @@ function checkScheduleEntry(v: unknown, path: string): string | null {
   if (!isString(v.class)) return `${path}.class: очікувався рядок`;
   if (!isString(v.subject)) return `${path}.subject: очікувався рядок`;
   if (!isString(v.room)) return `${path}.room: очікувався рядок`;
+  if (v.start !== undefined && !isString(v.start)) return `${path}.start: очікувався рядок`;
+  if (v.end !== undefined && !isString(v.end)) return `${path}.end: очікувався рядок`;
   return null;
 }
 
@@ -114,6 +116,8 @@ export function parseScheduleImport(text: string): ImportParseResult {
   if (!isRecord(raw)) return { ok: false, error: "Очікувався об'єкт верхнього рівня." };
   if (!isNumber(raw.version)) return { ok: false, error: "version: очікувалося число." };
   if (!isString(raw.updatedAt)) return { ok: false, error: "updatedAt: очікувався рядок формату YYYY-MM-DD." };
+  if (raw.replaceSchedule !== undefined && typeof raw.replaceSchedule !== "boolean")
+    return { ok: false, error: "replaceSchedule: очікувалося true або false." };
   if (!Array.isArray(raw.bells)) return { ok: false, error: "bells: очікувався масив." };
   if (!Array.isArray(raw.teachers)) return { ok: false, error: "teachers: очікувався масив." };
   if (!Array.isArray(raw.schedule)) return { ok: false, error: "schedule: очікувався масив." };
@@ -131,7 +135,24 @@ export function parseScheduleImport(text: string): ImportParseResult {
     if (err) return { ok: false, error: err };
   }
 
-  return { ok: true, data: raw as unknown as ScheduleImport };
+  const data = raw as unknown as ScheduleImport;
+
+  // Час — головне поле нової моделі: або заданий прямо, або виводиться з
+  // дзвінків за (клас → ланка, номер уроку). Якщо не виводиться — це не
+  // дрібниця, яку можна пропустити мовчки: без часу запис нічого не значить.
+  for (let i = 0; i < data.schedule.length; i++) {
+    const entry = data.schedule[i];
+    if (!importEntryTimes(entry, data.bells)) {
+      return {
+        ok: false,
+        error:
+          `schedule[${i}]: не вдалося визначити час. У дзвінках немає уроку ${entry.lesson} ` +
+          `для ${entry.class} класу — додайте його в bells або задайте start/end прямо в записі.`,
+      };
+    }
+  }
+
+  return { ok: true, data };
 }
 
 export interface ImportSummary {
@@ -141,6 +162,8 @@ export interface ImportSummary {
   updatedScheduleCount: number;
   /** teacherId у schedule, якого немає ні в наявних вчителях, ні серед вчителів у самому імпорті — типова ознака одруку. */
   unknownTeacherIds: string[];
+  /** Розклад буде замінено повністю — скільки наявних записів зникне. */
+  removedScheduleCount: number;
   /** У жодного дзвінка немає `level`, хоча ланок кілька — тоді номер уроку
    *  знову стає глобальним, і вчитель, зайнятий у своїй ланці, вважатиметься
    *  вільним у чужій. Попередження, не блокування. */
@@ -161,7 +184,9 @@ export function summarizeImport(state: AppState, data: ScheduleImport): ImportSu
   let newScheduleCount = 0;
   let updatedScheduleCount = 0;
   for (const entry of data.schedule) {
-    if (existingScheduleKeys.has(scheduleKey(entry))) updatedScheduleCount++;
+    const times = importEntryTimes(entry, data.bells);
+    if (!times) continue;
+    if (existingScheduleKeys.has(scheduleKey({ ...entry, start: times.start }))) updatedScheduleCount++;
     else newScheduleCount++;
   }
 
@@ -171,6 +196,15 @@ export function summarizeImport(state: AppState, data: ScheduleImport): ImportSu
   );
 
   const bellsWithoutLevel = data.bells.length > 0 && data.bells.every((b) => b.level === undefined);
+  const removedScheduleCount = data.replaceSchedule ? state.schedule.length - updatedScheduleCount : 0;
 
-  return { newTeachers, updatedTeachers, newScheduleCount, updatedScheduleCount, unknownTeacherIds, bellsWithoutLevel };
+  return {
+    newTeachers,
+    updatedTeachers,
+    newScheduleCount,
+    updatedScheduleCount,
+    removedScheduleCount,
+    unknownTeacherIds,
+    bellsWithoutLevel,
+  };
 }

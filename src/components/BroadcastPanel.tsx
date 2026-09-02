@@ -1,21 +1,18 @@
 import { useState } from "react";
 import { dateToWeekday, weekdayName } from "../ranking/presence";
 import { GROUP_CHAT_INVITE_URL } from "../config/settings";
-import { slotBell } from "../ranking/levels";
-import type { Bell } from "../types/schedule";
 import type { Substitution } from "../types/substitution";
 import { buildBroadcastMessage } from "../whatsapp";
 
 interface Props {
   substitutions: Substitution[];
-  bells: Bell[];
   onMarkAllInChat: () => void;
   onDelete: (id: string) => void;
 }
 
-export function BroadcastPanel({ substitutions, bells, onMarkAllInChat, onDelete }: Props) {
+export function BroadcastPanel({ substitutions, onMarkAllInChat, onDelete }: Props) {
   const [copied, setCopied] = useState(false);
-  const message = buildBroadcastMessage(substitutions, bells);
+  const message = buildBroadcastMessage(substitutions);
 
   async function handleCopy() {
     await navigator.clipboard.writeText(message);
@@ -28,12 +25,11 @@ export function BroadcastPanel({ substitutions, bells, onMarkAllInChat, onDelete
       <h2 className="broadcast-panel__title">Завчасні заміни очікують розсилки ({substitutions.length})</h2>
       <ul className="broadcast-panel__list">
         {substitutions.map((sub) => {
-          const bell = slotBell(bells, sub.class, sub.lesson);
           return (
             <li key={sub.id} className="broadcast-panel__item">
               <span>
                 {weekdayName(dateToWeekday(sub.date))}, {sub.date} ·{" "}
-                {bell ? `${bell.start}–${bell.end}` : `урок ${sub.lesson}`} · {sub.class} клас
+                {`${sub.start}–${sub.end}`} · {sub.class} клас
               </span>
               <button
                 type="button"

@@ -58,13 +58,15 @@ describe("effectiveDaySchedule", () => {
       ...seedState,
       schedule: [
         ...seedState.schedule,
-        { teacherId: "lytvyn-oleh", weekday: 2, lesson: 6, class: "5-6", subject: "фізика", room: "каб-7" },
+        { teacherId: "lytvyn-oleh", weekday: 2, start: "13:45", end: "14:30", lesson: 6, class: "5-6", subject: "фізика", room: "каб-7" },
       ],
       substitutions: [
         ...seedState.substitutions,
         {
           id: "sub-paired",
           date: "2026-09-01",
+          start: "13:45",
+          end: "14:30",
           lesson: 6,
           class: "5",
           absentTeacherId: "lytvyn-oleh",
@@ -90,6 +92,8 @@ describe("effectiveDaySchedule", () => {
         {
           id: "broken",
           date: "2026-09-09",
+          start: "09:00",
+          end: "09:45",
           lesson: 1,
           class: "7-А",
           absentTeacherId: "melnyk-taras",

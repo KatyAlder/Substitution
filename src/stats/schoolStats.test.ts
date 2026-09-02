@@ -40,6 +40,8 @@ describe("deadEndsForMonth", () => {
         {
           id: "sub-dead",
           date: "2026-09-10",
+          start: "09:55",
+          end: "10:40",
           lesson: 2,
           class: "11",
           absentTeacherId: "tkachenko-ihor",
@@ -54,6 +56,8 @@ describe("deadEndsForMonth", () => {
       {
         id: "sub-dead",
         date: "2026-09-10",
+        start: "09:55",
+        end: "10:40",
         lesson: 2,
         class: "11",
         absentTeacherName: "Ткаченко Ігор",

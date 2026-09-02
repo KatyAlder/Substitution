@@ -10,7 +10,7 @@ const validJson = JSON.stringify({
     { id: "novak-hanna", name: "Ганна Новак", subjects: ["біологія"] },
     { id: "melnyk-taras", name: "Тарас Мельник", subjects: ["фізика"] },
   ],
-  schedule: [{ teacherId: "novak-hanna", weekday: 2, lesson: 3, class: "11", subject: "біологія", room: "каб-12" }],
+  schedule: [{ teacherId: "novak-hanna", weekday: 2, start: "10:50", end: "11:35", lesson: 3, class: "11", subject: "біологія", room: "каб-12" }],
 });
 
 describe("parseScheduleImport", () => {
@@ -93,7 +93,7 @@ describe("summarizeImport", () => {
 
   it("виявляє teacherId у schedule, якого немає ні в стані, ні в самому імпорті", () => {
     const data = JSON.parse(validJson);
-    data.schedule.push({ teacherId: "nobody-such", weekday: 1, lesson: 1, class: "5", subject: "х", room: "1" });
+    data.schedule.push({ teacherId: "nobody-such", weekday: 1, start: "09:00", end: "09:45", lesson: 1, class: "5", subject: "х", room: "1" });
     const summary = summarizeImport(seedState, data);
     expect(summary.unknownTeacherIds).toEqual(["nobody-such"]);
   });
@@ -102,5 +102,39 @@ describe("summarizeImport", () => {
     const before = JSON.stringify(seedState);
     summarizeImport(seedState, JSON.parse(validJson));
     expect(JSON.stringify(seedState)).toBe(before);
+  });
+});
+
+describe("час запису розкладу в імпорті", () => {
+  const withLevels = {
+    version: 1,
+    updatedAt: "2026-09-01",
+    bells: [
+      { lesson: 2, start: "10:50", end: "11:35", level: "primary" },
+      { lesson: 2, start: "11:05", end: "11:50", level: "senior" },
+    ],
+    teachers: [],
+    schedule: [{ teacherId: "t1", weekday: 1, lesson: 2, class: "3", subject: "читання", room: "к1" }],
+  };
+
+  it("номер уроку без явного часу резолвиться через дзвінки своєї ланки", () => {
+    const r = parseScheduleImport(JSON.stringify(withLevels));
+    expect(r.ok).toBe(true);
+  });
+
+  it("номер, якого немає в дзвінках цієї ланки, блокує імпорт із поясненням", () => {
+    const bad = { ...withLevels, schedule: [{ ...withLevels.schedule[0], lesson: 9 }] };
+    const r = parseScheduleImport(JSON.stringify(bad));
+    expect(r.ok).toBe(false);
+    expect(r.ok ? "" : r.error).toContain("не вдалося визначити час");
+  });
+
+  it("явні start/end приймаються навіть без відповідного дзвінка", () => {
+    const explicit = {
+      ...withLevels,
+      schedule: [{ ...withLevels.schedule[0], lesson: 9, start: "14:00", end: "14:45" }],
+    };
+    const r = parseScheduleImport(JSON.stringify(explicit));
+    expect(r.ok).toBe(true);
   });
 });

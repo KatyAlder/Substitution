@@ -1,12 +1,10 @@
 import { MONTH_GENITIVE } from "./parser/parseRequest";
-import { slotBell } from "./ranking/levels";
 import { dateToWeekday, toMinutes, weekdayName } from "./ranking/presence";
-import type { Bell } from "./types/schedule";
 import type { Substitution } from "./types/substitution";
 import type { Teacher } from "./types/teacher";
 
-export function buildSubstitutionMessage(substitution: Substitution, weekday: number, bell: Bell | undefined): string {
-  const lesson = bell ? `${bell.start}–${bell.end}` : `${substitution.lesson}`;
+export function buildSubstitutionMessage(substitution: Substitution, weekday: number): string {
+  const lesson = `${substitution.start}–${substitution.end}`;
   return (
     `Привіт! Потрібна заміна: ${weekdayName(weekday)}, ${substitution.date}, ` +
     `урок ${lesson}, ${substitution.class} клас. ` +
@@ -37,7 +35,7 @@ function substitutionsHeader(weekday: number, date: string): string {
  *  на всі поточні завчасні заміни, що ще не в чаті. Заміни групуються за датою
  *  (зазвичай одна, але завчасні можуть бути на різні дні); рядки в межах дати —
  *  за номером уроку. */
-export function buildBroadcastMessage(substitutions: Substitution[], bells: Bell[]): string {
+export function buildBroadcastMessage(substitutions: Substitution[]): string {
   const byDate = new Map<string, Substitution[]>();
   for (const s of substitutions) {
     const list = byDate.get(s.date) ?? [];
@@ -53,14 +51,8 @@ export function buildBroadcastMessage(substitutions: Substitution[], bells: Bell
       // ланках однакові номери йдуть у різний час (урок 2: 10:50 у початковій,
       // 11:05 у старшій), тож номер не задає порядку в спільному списку.
       const lines = [...subs]
-        .map((s) => ({ sub: s, bell: slotBell(bells, s.class, s.lesson) }))
-        .sort((a, b) =>
-          a.bell && b.bell ? toMinutes(a.bell.start) - toMinutes(b.bell.start) : a.sub.lesson - b.sub.lesson
-        )
-        .map(({ sub, bell }) => {
-          const time = bell ? `${bell.start}-${bell.end}` : `урок ${sub.lesson}`;
-          return `${sub.class} клас - ${time}`;
-        });
+        .sort((a, b) => toMinutes(a.start) - toMinutes(b.start))
+        .map((s) => `${s.class} клас - ${s.start}-${s.end}`);
       return [header, ...lines].join("\n");
     });
 

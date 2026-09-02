@@ -162,69 +162,69 @@ export const seedState: AppState = {
 
   schedule: [
     // Ткаченко Ігор
-    { teacherId: "tkachenko-ihor", weekday: 2, lesson: 1, class: "11", subject: "інформатика", room: "каб-14" },
-    { teacherId: "tkachenko-ihor", weekday: 2, lesson: 3, class: "11", subject: "інформатика", room: "каб-14" },
-    { teacherId: "tkachenko-ihor", weekday: 4, lesson: 1, class: "9-Б", subject: "інформатика", room: "каб-14" },
+    { teacherId: "tkachenko-ihor", weekday: 2, start: "09:00", end: "09:45", lesson: 1, class: "11", subject: "інформатика", room: "каб-14" },
+    { teacherId: "tkachenko-ihor", weekday: 2, start: "10:50", end: "11:35", lesson: 3, class: "11", subject: "інформатика", room: "каб-14" },
+    { teacherId: "tkachenko-ihor", weekday: 4, start: "09:00", end: "09:45", lesson: 1, class: "9-Б", subject: "інформатика", room: "каб-14" },
 
     // Клименко Оксана
-    { teacherId: "klymenko-oksana", weekday: 2, lesson: 4, class: "7-А", subject: "біологія", room: "каб-12" },
-    { teacherId: "klymenko-oksana", weekday: 3, lesson: 2, class: "7-А", subject: "біологія", room: "каб-12" },
-    { teacherId: "klymenko-oksana", weekday: 4, lesson: 1, class: "7-А", subject: "біологія", room: "каб-12" },
+    { teacherId: "klymenko-oksana", weekday: 2, start: "11:55", end: "12:40", lesson: 4, class: "7-А", subject: "біологія", room: "каб-12" },
+    { teacherId: "klymenko-oksana", weekday: 3, start: "09:55", end: "10:40", lesson: 2, class: "7-А", subject: "біологія", room: "каб-12" },
+    { teacherId: "klymenko-oksana", weekday: 4, start: "09:00", end: "09:45", lesson: 1, class: "7-А", subject: "біологія", room: "каб-12" },
 
     // Гончарук Ірина
-    { teacherId: "honcharuk-iryna", weekday: 3, lesson: 1, class: "11", subject: "інформатика", room: "каб-14" },
+    { teacherId: "honcharuk-iryna", weekday: 3, start: "09:00", end: "09:45", lesson: 1, class: "11", subject: "інформатика", room: "каб-14" },
 
     // Мельник Тарас — 3 уроки у вівторок (нічия з Кравець)
-    { teacherId: "melnyk-taras", weekday: 2, lesson: 1, class: "11", subject: "інформатика", room: "каб-14" },
-    { teacherId: "melnyk-taras", weekday: 2, lesson: 2, class: "9-Б", subject: "інформатика", room: "каб-9" },
-    { teacherId: "melnyk-taras", weekday: 2, lesson: 4, class: "10-Б", subject: "інформатика", room: "каб-9" },
-    { teacherId: "melnyk-taras", weekday: 3, lesson: 1, class: "7-А", subject: "інформатика", room: "каб-9" },
+    { teacherId: "melnyk-taras", weekday: 2, start: "09:00", end: "09:45", lesson: 1, class: "11", subject: "інформатика", room: "каб-14" },
+    { teacherId: "melnyk-taras", weekday: 2, start: "09:55", end: "10:40", lesson: 2, class: "9-Б", subject: "інформатика", room: "каб-9" },
+    { teacherId: "melnyk-taras", weekday: 2, start: "11:55", end: "12:40", lesson: 4, class: "10-Б", subject: "інформатика", room: "каб-9" },
+    { teacherId: "melnyk-taras", weekday: 3, start: "09:00", end: "09:45", lesson: 1, class: "7-А", subject: "інформатика", room: "каб-9" },
 
     // Кравець Марина — 3 уроки у вівторок (нічия з Мельником)
-    { teacherId: "kravets-maryna", weekday: 2, lesson: 1, class: "9-А", subject: "інформатика", room: "каб-9" },
-    { teacherId: "kravets-maryna", weekday: 2, lesson: 2, class: "8-Б", subject: "інформатика", room: "каб-9" },
-    { teacherId: "kravets-maryna", weekday: 2, lesson: 5, class: "11", subject: "інформатика", room: "каб-14" },
-    { teacherId: "kravets-maryna", weekday: 3, lesson: 4, class: "7-А", subject: "інформатика", room: "каб-9" },
+    { teacherId: "kravets-maryna", weekday: 2, start: "09:00", end: "09:45", lesson: 1, class: "9-А", subject: "інформатика", room: "каб-9" },
+    { teacherId: "kravets-maryna", weekday: 2, start: "09:55", end: "10:40", lesson: 2, class: "8-Б", subject: "інформатика", room: "каб-9" },
+    { teacherId: "kravets-maryna", weekday: 2, start: "12:50", end: "13:35", lesson: 5, class: "11", subject: "інформатика", room: "каб-14" },
+    { teacherId: "kravets-maryna", weekday: 3, start: "11:55", end: "12:40", lesson: 4, class: "7-А", subject: "інформатика", room: "каб-9" },
 
     // Бондаренко Світлана — власний урок + викладає "11" на іншому тижневому дні
-    { teacherId: "bondarenko-svitlana", weekday: 2, lesson: 2, class: "9-А", subject: "інформатика", room: "каб-9" },
-    { teacherId: "bondarenko-svitlana", weekday: 4, lesson: 3, class: "11", subject: "інформатика", room: "каб-14" },
+    { teacherId: "bondarenko-svitlana", weekday: 2, start: "09:55", end: "10:40", lesson: 2, class: "9-А", subject: "інформатика", room: "каб-9" },
+    { teacherId: "bondarenko-svitlana", weekday: 4, start: "10:50", end: "11:35", lesson: 3, class: "11", subject: "інформатика", room: "каб-14" },
 
     // Захарченко Віктор — власний урок + викладає "11" на іншому дні
-    { teacherId: "zakharchenko-viktor", weekday: 2, lesson: 1, class: "8-Б", subject: "інформатика", room: "каб-9" },
-    { teacherId: "zakharchenko-viktor", weekday: 4, lesson: 2, class: "11", subject: "інформатика", room: "каб-9" },
+    { teacherId: "zakharchenko-viktor", weekday: 2, start: "09:00", end: "09:45", lesson: 1, class: "8-Б", subject: "інформатика", room: "каб-9" },
+    { teacherId: "zakharchenko-viktor", weekday: 4, start: "09:55", end: "10:40", lesson: 2, class: "11", subject: "інформатика", room: "каб-9" },
 
     // Коваль Андрій — математика, не перетинається з "11" чи "7-А"
-    { teacherId: "koval-andrii", weekday: 2, lesson: 1, class: "9-А", subject: "математика", room: "каб-5" },
-    { teacherId: "koval-andrii", weekday: 2, lesson: 2, class: "8-Б", subject: "математика", room: "каб-5" },
-    { teacherId: "koval-andrii", weekday: 2, lesson: 4, class: "10-Б", subject: "математика", room: "каб-5" },
-    { teacherId: "koval-andrii", weekday: 2, lesson: 5, class: "9-Б", subject: "математика", room: "каб-5" },
-    { teacherId: "koval-andrii", weekday: 3, lesson: 1, class: "9-А", subject: "математика", room: "каб-5" },
-    { teacherId: "koval-andrii", weekday: 3, lesson: 3, class: "10-Б", subject: "математика", room: "каб-5" },
+    { teacherId: "koval-andrii", weekday: 2, start: "09:00", end: "09:45", lesson: 1, class: "9-А", subject: "математика", room: "каб-5" },
+    { teacherId: "koval-andrii", weekday: 2, start: "09:55", end: "10:40", lesson: 2, class: "8-Б", subject: "математика", room: "каб-5" },
+    { teacherId: "koval-andrii", weekday: 2, start: "11:55", end: "12:40", lesson: 4, class: "10-Б", subject: "математика", room: "каб-5" },
+    { teacherId: "koval-andrii", weekday: 2, start: "12:50", end: "13:35", lesson: 5, class: "9-Б", subject: "математика", room: "каб-5" },
+    { teacherId: "koval-andrii", weekday: 3, start: "09:00", end: "09:45", lesson: 1, class: "9-А", subject: "математика", room: "каб-5" },
+    { teacherId: "koval-andrii", weekday: 3, start: "10:50", end: "11:35", lesson: 3, class: "10-Б", subject: "математика", room: "каб-5" },
 
     // Шевченко Наталія — українська, тільки "8-Б", уникає lesson3 вт і lesson2 ср
-    { teacherId: "shevchenko-natalia", weekday: 2, lesson: 1, class: "8-Б", subject: "українська мова", room: "каб-6" },
-    { teacherId: "shevchenko-natalia", weekday: 2, lesson: 2, class: "8-Б", subject: "українська мова", room: "каб-6" },
-    { teacherId: "shevchenko-natalia", weekday: 2, lesson: 4, class: "8-Б", subject: "українська мова", room: "каб-6" },
-    { teacherId: "shevchenko-natalia", weekday: 3, lesson: 1, class: "8-Б", subject: "українська мова", room: "каб-6" },
-    { teacherId: "shevchenko-natalia", weekday: 3, lesson: 3, class: "8-Б", subject: "українська мова", room: "каб-6" },
+    { teacherId: "shevchenko-natalia", weekday: 2, start: "09:00", end: "09:45", lesson: 1, class: "8-Б", subject: "українська мова", room: "каб-6" },
+    { teacherId: "shevchenko-natalia", weekday: 2, start: "09:55", end: "10:40", lesson: 2, class: "8-Б", subject: "українська мова", room: "каб-6" },
+    { teacherId: "shevchenko-natalia", weekday: 2, start: "11:55", end: "12:40", lesson: 4, class: "8-Б", subject: "українська мова", room: "каб-6" },
+    { teacherId: "shevchenko-natalia", weekday: 3, start: "09:00", end: "09:45", lesson: 1, class: "8-Б", subject: "українська мова", room: "каб-6" },
+    { teacherId: "shevchenko-natalia", weekday: 3, start: "10:50", end: "11:35", lesson: 3, class: "8-Б", subject: "українська мова", room: "каб-6" },
 
     // Литвин Олег — фізика, тільки четвер
-    { teacherId: "lytvyn-oleh", weekday: 4, lesson: 2, class: "10-Б", subject: "фізика", room: "каб-7" },
+    { teacherId: "lytvyn-oleh", weekday: 4, start: "09:55", end: "10:40", lesson: 2, class: "10-Б", subject: "фізика", room: "каб-7" },
 
     // Савчук Дмитро — англійська, викладає й "11"
-    { teacherId: "savchuk-dmytro", weekday: 2, lesson: 1, class: "11", subject: "англійська мова", room: "каб-8" },
-    { teacherId: "savchuk-dmytro", weekday: 2, lesson: 4, class: "9-А", subject: "англійська мова", room: "каб-8" },
+    { teacherId: "savchuk-dmytro", weekday: 2, start: "09:00", end: "09:45", lesson: 1, class: "11", subject: "англійська мова", room: "каб-8" },
+    { teacherId: "savchuk-dmytro", weekday: 2, start: "11:55", end: "12:40", lesson: 4, class: "9-А", subject: "англійська мова", room: "каб-8" },
 
     // Романюк Юлія — фізкультура, 4 уроки у вівторок + викладає "11" у четвер
-    { teacherId: "romaniuk-yulia", weekday: 2, lesson: 1, class: "8-Б", subject: "фізична культура", room: "спортзал" },
-    { teacherId: "romaniuk-yulia", weekday: 2, lesson: 2, class: "9-А", subject: "фізична культура", room: "спортзал" },
-    { teacherId: "romaniuk-yulia", weekday: 2, lesson: 4, class: "10-Б", subject: "фізична культура", room: "спортзал" },
-    { teacherId: "romaniuk-yulia", weekday: 2, lesson: 5, class: "9-Б", subject: "фізична культура", room: "спортзал" },
-    { teacherId: "romaniuk-yulia", weekday: 4, lesson: 3, class: "11", subject: "фізична культура", room: "спортзал" },
+    { teacherId: "romaniuk-yulia", weekday: 2, start: "09:00", end: "09:45", lesson: 1, class: "8-Б", subject: "фізична культура", room: "спортзал" },
+    { teacherId: "romaniuk-yulia", weekday: 2, start: "09:55", end: "10:40", lesson: 2, class: "9-А", subject: "фізична культура", room: "спортзал" },
+    { teacherId: "romaniuk-yulia", weekday: 2, start: "11:55", end: "12:40", lesson: 4, class: "10-Б", subject: "фізична культура", room: "спортзал" },
+    { teacherId: "romaniuk-yulia", weekday: 2, start: "12:50", end: "13:35", lesson: 5, class: "9-Б", subject: "фізична культура", room: "спортзал" },
+    { teacherId: "romaniuk-yulia", weekday: 4, start: "10:50", end: "11:35", lesson: 3, class: "11", subject: "фізична культура", room: "спортзал" },
 
     // Дяченко Петро — хімія, той самий вівторок/урок3/кабінет, що й слот 1
-    { teacherId: "diachenko-petro", weekday: 2, lesson: 3, class: "10-Б", subject: "хімія", room: "каб-14" },
+    { teacherId: "diachenko-petro", weekday: 2, start: "10:50", end: "11:35", lesson: 3, class: "10-Б", subject: "хімія", room: "каб-14" },
   ],
 
   substitutions: [
@@ -232,6 +232,8 @@ export const seedState: AppState = {
     {
       id: "sub-1",
       date: "2026-09-08",
+      start: "10:50",
+      end: "11:35",
       lesson: 3,
       class: "11",
       absentTeacherId: "tkachenko-ihor",
@@ -242,6 +244,8 @@ export const seedState: AppState = {
     {
       id: "sub-2",
       date: "2026-09-09",
+      start: "09:55",
+      end: "10:40",
       lesson: 2,
       class: "7-А",
       absentTeacherId: "klymenko-oksana",
@@ -254,6 +258,8 @@ export const seedState: AppState = {
     {
       id: "sub-h1",
       date: "2026-09-02",
+      start: "09:55",
+      end: "10:40",
       lesson: 2,
       class: "9-Б",
       absentTeacherId: "klymenko-oksana",
@@ -266,6 +272,8 @@ export const seedState: AppState = {
     {
       id: "sub-h2",
       date: "2026-09-03",
+      start: "09:00",
+      end: "09:45",
       lesson: 1,
       class: "9-А",
       absentTeacherId: "koval-andrii",
@@ -278,6 +286,8 @@ export const seedState: AppState = {
     {
       id: "sub-h3",
       date: "2026-09-01",
+      start: "11:55",
+      end: "12:40",
       lesson: 4,
       class: "10-Б",
       absentTeacherId: "koval-andrii",
@@ -290,6 +300,8 @@ export const seedState: AppState = {
     {
       id: "sub-h4",
       date: "2026-09-04",
+      start: "12:50",
+      end: "13:35",
       lesson: 5,
       class: "9-Б",
       absentTeacherId: "koval-andrii",
@@ -302,6 +314,8 @@ export const seedState: AppState = {
     {
       id: "sub-h5",
       date: "2026-09-05",
+      start: "09:00",
+      end: "09:45",
       lesson: 1,
       class: "8-Б",
       absentTeacherId: "shevchenko-natalia",
@@ -314,6 +328,8 @@ export const seedState: AppState = {
     {
       id: "sub-h6",
       date: "2026-09-06",
+      start: "09:55",
+      end: "10:40",
       lesson: 2,
       class: "9-А",
       absentTeacherId: "zakharchenko-viktor",

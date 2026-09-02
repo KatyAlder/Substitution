@@ -1,9 +1,12 @@
 import type { AppState } from "../types/state";
 import type { SubstitutionStatus } from "../types/substitution";
 import { classesOverlap } from "../ranking/classes";
+import { intervalsOverlap } from "../ranking/levels";
 import { dateToWeekday } from "../ranking/presence";
 
 export interface EffectiveSlot {
+  start: string;
+  end: string;
   lesson: number;
   class: string;
   subject: string;
@@ -29,11 +32,14 @@ export function effectiveDaySchedule(state: AppState, date: string): EffectiveSl
     .filter((entry) => entry.weekday === weekday)
     .map((entry) => {
       const sub = daySubstitutions.find(
-        (s) => s.lesson === entry.lesson && classesOverlap(s.class, entry.class) && s.absentTeacherId === entry.teacherId
+        (s) =>
+          intervalsOverlap(s, entry) && classesOverlap(s.class, entry.class) && s.absentTeacherId === entry.teacherId
       );
 
       if (sub?.status === "closed" && sub.substituteId) {
         return {
+          start: entry.start,
+          end: entry.end,
           lesson: entry.lesson,
           class: entry.class,
           subject: entry.subject,
@@ -45,6 +51,8 @@ export function effectiveDaySchedule(state: AppState, date: string): EffectiveSl
       }
 
       return {
+        start: entry.start,
+        end: entry.end,
         lesson: entry.lesson,
         class: entry.class,
         subject: entry.subject,

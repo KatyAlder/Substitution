@@ -3,13 +3,14 @@ import type { Bell } from "../types/schedule";
 import { splitClassLabel } from "./classes";
 import { toMinutes } from "./presence";
 
-/** Номер уроку — не глобальний ключ: у кожної ланки школи свій розклад
- *  дзвінків. Цей модуль переводить пару (клас, номер уроку) у реальний
- *  проміжок часу, і саме за часом далі рахується будь-яка зайнятість —
- *  власний урок кандидата, присутність, зайнятість лабораторії.
+/** Час уроку зберігається явно в `ScheduleEntry`/`Substitution`, і саме за
+ *  ним рахується будь-яка зайнятість (`intervalsOverlap`). Номер уроку —
+ *  лише підпис: у кожної ланки школи свій розклад дзвінків, тож однакові
+ *  номери означають різний час, а різні — можуть перетинатися.
  *
- *  Дзвінок без `level` вважається чинним для всіх ланок — так бази,
- *  збережені до появи ланок, поводяться точно як раніше. */
+ *  Переведення "номер уроку → час" (`slotInterval`) лишилось тільки для двох
+ *  меж, де номер іще трапляється: розбір файлу імпорту й одноразова міграція
+ *  старих баз. Дзвінок без `level` чинний для всіх ланок. */
 
 export interface TimeInterval {
   start: string; // "HH:MM"
@@ -45,12 +46,6 @@ export function bellsForSlot(bells: Bell[], className: string, lesson: number): 
   return bells.filter((b) => b.lesson === lesson && (b.level === undefined || ids.includes(b.level)));
 }
 
-/** Один дзвінок для ПОКАЗУ часу слоту (картка, повідомлення, календар).
- *  У звичайному випадку клас належить одній ланці й варіант рівно один. */
-export function slotBell(bells: Bell[], className: string, lesson: number): Bell | undefined {
-  return bellsForSlot(bells, className, lesson)[0];
-}
-
 /** Проміжок часу слоту для РОЗРАХУНКІВ — об'єднання всіх чинних дзвінків
  *  (від найранішого початку до найпізнішого кінця). Для класу однієї ланки
  *  збігається зі `slotBell`; для спареного через ланки накриває обидва. */
@@ -70,18 +65,4 @@ export function slotInterval(bells: Bell[], className: string, lesson: number): 
 /** Напіввідкриті проміжки: урок 10:50–11:35 і урок 11:35–12:20 не конфліктують. */
 export function intervalsOverlap(a: TimeInterval, b: TimeInterval): boolean {
   return toMinutes(a.start) < toMinutes(b.end) && toMinutes(b.start) < toMinutes(a.end);
-}
-
-export interface SlotRef {
-  class: string;
-  lesson: number;
-}
-
-/** Чи два слоти накладаються в часі. Якщо дзвінків на них немає взагалі —
- *  падаємо назад на порівняння номерів (поведінка до появи ланок). */
-export function slotsOverlap(bells: Bell[], a: SlotRef, b: SlotRef): boolean {
-  const ia = slotInterval(bells, a.class, a.lesson);
-  const ib = slotInterval(bells, b.class, b.lesson);
-  if (!ia || !ib) return a.lesson === b.lesson;
-  return intervalsOverlap(ia, ib);
 }

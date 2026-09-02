@@ -1,24 +1,20 @@
 import { dateToWeekday, weekdayName } from "../ranking/presence";
-import { slotBell } from "../ranking/levels";
-import type { Bell } from "../types/schedule";
 import type { Substitution } from "../types/substitution";
 import type { Teacher } from "../types/teacher";
 
 interface Props {
   substitutions: Substitution[];
   teachers: Teacher[];
-  bells: Bell[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-export function SlotPicker({ substitutions, teachers, bells, selectedId, onSelect, onDelete }: Props) {
+export function SlotPicker({ substitutions, teachers, selectedId, onSelect, onDelete }: Props) {
   return (
     <div className="slot-picker">
       {substitutions.map((sub) => {
         const absent = teachers.find((t) => t.id === sub.absentTeacherId);
-        const bell = slotBell(bells, sub.class, sub.lesson);
         const weekday = dateToWeekday(sub.date);
         const isSelected = sub.id === selectedId;
 
@@ -35,7 +31,7 @@ export function SlotPicker({ substitutions, teachers, bells, selectedId, onSelec
                 {sub.status === "in-chat" ? "в чаті" : sub.mode === "urgent" ? "термінова" : "завчасна"}
               </span>
               <span className="slot-picker__main">
-                {weekdayName(weekday)}, {sub.date} · {bell ? `${bell.start}–${bell.end}` : `урок ${sub.lesson}`} ·{" "}
+                {weekdayName(weekday)}, {sub.date} · {sub.start}–{sub.end} ·{" "}
                 {sub.class} клас
               </span>
               <span className="slot-picker__sub">відсутній: {absent?.name ?? sub.absentTeacherId}</span>

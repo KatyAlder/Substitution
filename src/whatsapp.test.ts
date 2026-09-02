@@ -4,10 +4,11 @@ import type { Substitution } from "./types/substitution";
 import { buildBroadcastMessage, buildWholeDayMessage } from "./whatsapp";
 
 describe("buildBroadcastMessage", () => {
-  const bells = seedState.bells;
   const sub = (over: Partial<Substitution>): Substitution => ({
     id: "x",
     date: "2026-09-02",
+    start: "09:55",
+    end: "10:40",
     lesson: 2,
     class: "2",
     absentTeacherId: "t",
@@ -17,10 +18,12 @@ describe("buildBroadcastMessage", () => {
     ...over,
   });
 
-  it("одна дата — спільний заголовок + рядки за номером уроку", () => {
+  it("одна дата — спільний заголовок + рядки за часом початку", () => {
     const message = buildBroadcastMessage(
-      [sub({ id: "a", lesson: 4, class: "2" }), sub({ id: "b", lesson: 2, class: "3-4" })],
-      bells
+      [
+        sub({ id: "a", start: "11:55", end: "12:40", lesson: 4, class: "2" }),
+        sub({ id: "b", start: "09:55", end: "10:40", lesson: 2, class: "3-4" }),
+      ]
     );
 
     expect(message).toBe(
@@ -31,10 +34,9 @@ describe("buildBroadcastMessage", () => {
   it("різні дати — окремий блок на кожну, розділені порожнім рядком", () => {
     const message = buildBroadcastMessage(
       [
-        sub({ id: "a", date: "2026-09-09", lesson: 2, class: "7-А" }),
-        sub({ id: "b", date: "2026-09-08", lesson: 3, class: "11" }),
-      ],
-      bells
+        sub({ id: "a", date: "2026-09-09", start: "09:55", end: "10:40", lesson: 2, class: "7-А" }),
+        sub({ id: "b", date: "2026-09-08", start: "10:50", end: "11:35", lesson: 3, class: "11" }),
+      ]
     );
 
     expect(message).toBe(

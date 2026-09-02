@@ -10,8 +10,8 @@ import {
 import { TeacherPicker } from "../components/TeacherPicker";
 import { setTeacherSchedule } from "../data/actions";
 import { useAppState } from "../data/AppStateContext";
-import { slotsOverlap } from "../ranking/levels";
-import { shortWeekdayName } from "../ranking/presence";
+import { intervalsOverlap } from "../ranking/levels";
+import { shortWeekdayName, toMinutes } from "../ranking/presence";
 import type { ScheduleEntry } from "../types/schedule";
 import type { Teacher } from "../types/teacher";
 
@@ -20,7 +20,7 @@ function firstIdByName(teachers: Teacher[]): string | null {
 }
 
 function sortRows(rows: ScheduleRow[]): ScheduleRow[] {
-  return [...rows].sort((a, b) => a.weekday - b.weekday || a.lesson - b.lesson);
+  return [...rows].sort((a, b) => a.weekday - b.weekday || toMinutes(a.start) - toMinutes(b.start));
 }
 
 export function ScheduleScreen() {
@@ -57,6 +57,14 @@ function ScheduleForm({ teacher }: { teacher: Teacher }) {
     () => [...new Set([...teacher.subjects, ...state.schedule.map((e) => e.subject)])].sort((a, b) => a.localeCompare(b, "uk")),
     [teacher.subjects, state.schedule]
   );
+  const startOptions = useMemo(
+    () => [...new Set(state.bells.map((b) => b.start))].sort((a, b) => toMinutes(a) - toMinutes(b)),
+    [state.bells]
+  );
+  const endOptions = useMemo(
+    () => [...new Set(state.bells.map((b) => b.end))].sort((a, b) => toMinutes(a) - toMinutes(b)),
+    [state.bells]
+  );
   const roomOptions = useMemo(
     () => [...new Set(state.schedule.map((e) => e.room).filter(Boolean))].sort((a, b) => a.localeCompare(b, "uk")),
     [state.schedule]
@@ -72,11 +80,11 @@ function ScheduleForm({ teacher }: { teacher: Teacher }) {
         const a = valid[i];
         const b = valid[j];
         if (a.entry.weekday !== b.entry.weekday) continue;
-        if (slotsOverlap(state.bells, a.entry, b.entry)) return [a.row, b.row] as const;
+        if (intervalsOverlap(a.entry, b.entry)) return [a.row, b.row] as const;
       }
     }
     return null;
-  }, [rows, state.bells]);
+  }, [rows]);
 
   const dirty = useMemo(() => JSON.stringify(rows) !== JSON.stringify(stored), [rows, stored]);
   const isValid = rows.every(isScheduleRowValid) && !overlap;
@@ -95,6 +103,8 @@ function ScheduleForm({ teacher }: { teacher: Teacher }) {
         onChange={setRows}
         subjectOptions={subjectOptions}
         roomOptions={roomOptions}
+        startOptions={startOptions}
+        endOptions={endOptions}
       />
 
       <button type="button" className="btn" onClick={() => setRows([...rows, emptyRow()])}>
@@ -103,8 +113,9 @@ function ScheduleForm({ teacher }: { teacher: Teacher }) {
 
       {overlap && (
         <p className="parse-panel__warning">
-          {shortWeekdayName(overlap[0].weekday)}: урок {overlap[0].lesson} ({overlap[0].classes.join("/")}) і урок{" "}
-          {overlap[1].lesson} ({overlap[1].classes.join("/")}) відбуваються в один час — вчитель не може вести обидва.
+          {shortWeekdayName(overlap[0].weekday)}: {overlap[0].start}–{overlap[0].end} ({overlap[0].classes.join("/")}) і{" "}
+          {overlap[1].start}–{overlap[1].end} ({overlap[1].classes.join("/")}) перетинаються — вчитель не може вести
+          обидва уроки.
         </p>
       )}
 

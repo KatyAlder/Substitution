@@ -5,6 +5,10 @@ export type ClosedVia = "call" | "chat" | "voluntary" | "manual";
 export interface Substitution {
   id: string;
   date: string; // "YYYY-MM-DD"
+  /** Час слоту — джерело істини (див. коментар у ScheduleEntry). */
+  start: string; // "HH:MM"
+  end: string; // "HH:MM"
+  /** Номер уроку — лише підпис. */
   lesson: number;
   class: string;
   absentTeacherId: string;

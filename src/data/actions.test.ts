@@ -68,12 +68,14 @@ describe("markBroadcast", () => {
 describe("createSubstitutions", () => {
   it("додає одну нову заміну зі статусом 'open'", () => {
     const next = createSubstitutions(seedState, [
-      { date: "2026-09-08", lesson: 1, class: "11", absentTeacherId: "tkachenko-ihor", mode: "urgent" },
+      { date: "2026-09-08", start: "09:00", end: "09:45", lesson: 1, class: "11", absentTeacherId: "tkachenko-ihor", mode: "urgent" },
     ]);
     expect(next.substitutions).toHaveLength(seedState.substitutions.length + 1);
     const added = next.substitutions.at(-1)!;
     expect(added).toMatchObject({
       date: "2026-09-08",
+      start: "09:00",
+      end: "09:45",
       lesson: 1,
       class: "11",
       absentTeacherId: "tkachenko-ihor",
@@ -86,8 +88,8 @@ describe("createSubstitutions", () => {
 
   it("пакетно додає кілька замін одразу ('на весь день')", () => {
     const next = createSubstitutions(seedState, [
-      { date: "2026-09-08", lesson: 1, class: "9-А", absentTeacherId: "kravets-maryna", mode: "urgent" },
-      { date: "2026-09-08", lesson: 2, class: "8-Б", absentTeacherId: "kravets-maryna", mode: "urgent" },
+      { date: "2026-09-08", start: "09:00", end: "09:45", lesson: 1, class: "9-А", absentTeacherId: "kravets-maryna", mode: "urgent" },
+      { date: "2026-09-08", start: "09:55", end: "10:40", lesson: 2, class: "8-Б", absentTeacherId: "kravets-maryna", mode: "urgent" },
     ]);
     expect(next.substitutions).toHaveLength(seedState.substitutions.length + 2);
   });
@@ -95,7 +97,7 @@ describe("createSubstitutions", () => {
   it("не мутує вихідний стан", () => {
     const before = JSON.stringify(seedState);
     createSubstitutions(seedState, [
-      { date: "2026-09-08", lesson: 1, class: "11", absentTeacherId: "tkachenko-ihor", mode: "urgent" },
+      { date: "2026-09-08", start: "09:00", end: "09:45", lesson: 1, class: "11", absentTeacherId: "tkachenko-ihor", mode: "urgent" },
     ]);
     expect(JSON.stringify(seedState)).toBe(before);
   });
@@ -139,12 +141,12 @@ describe("updateTeacher", () => {
 describe("setTeacherSchedule", () => {
   it("замінює всі записи цільового вчителя, чужих не чіпає", () => {
     const next = setTeacherSchedule(seedState, "tkachenko-ihor", [
-      { weekday: 1, lesson: 2, class: "10-А", subject: "інформатика", room: "каб-14" },
+      { weekday: 1, start: "09:55", end: "10:40", lesson: 2, class: "10-А", subject: "інформатика", room: "каб-14" },
     ]);
 
     const mine = next.schedule.filter((e) => e.teacherId === "tkachenko-ihor");
     expect(mine).toEqual([
-      { teacherId: "tkachenko-ihor", weekday: 1, lesson: 2, class: "10-А", subject: "інформатика", room: "каб-14" },
+      { teacherId: "tkachenko-ihor", weekday: 1, start: "09:55", end: "10:40", lesson: 2, class: "10-А", subject: "інформатика", room: "каб-14" },
     ]);
 
     const others = next.schedule.filter((e) => e.teacherId !== "tkachenko-ihor");
@@ -158,7 +160,7 @@ describe("setTeacherSchedule", () => {
 
   it("зберігає спарену мітку так, що обидва класи перетинаються", () => {
     const next = setTeacherSchedule(seedState, "tkachenko-ihor", [
-      { weekday: 4, lesson: 1, class: "9-А/9-Б", subject: "інформатика", room: "каб-14" },
+      { weekday: 4, start: "09:00", end: "09:45", lesson: 1, class: "9-А/9-Б", subject: "інформатика", room: "каб-14" },
     ]);
     const entry = next.schedule.find((e) => e.teacherId === "tkachenko-ihor")!;
     expect(classesOverlap(entry.class, "9-А")).toBe(true);
@@ -218,7 +220,7 @@ describe("removeSeedTeachers", () => {
       ],
       schedule: [
         ...seedState.schedule,
-        { teacherId: "real-1", weekday: 2, lesson: 1, class: "9", subject: "хімія", room: "12" },
+        { teacherId: "real-1", weekday: 2, start: "09:00", end: "09:45", lesson: 1, class: "9", subject: "хімія", room: "12" },
       ],
     };
 

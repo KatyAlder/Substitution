@@ -1077,7 +1077,11 @@ body {
 }
 
 .schedule-editor__lesson {
-  width: 4rem;
+  width: 3.5rem;
+}
+
+.schedule-editor__time {
+  width: 5rem;
 }
 
 .schedule-editor__class {

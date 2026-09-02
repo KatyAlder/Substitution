@@ -68,6 +68,8 @@ export function markBroadcast(state: AppState, substitutionIds: string[]): AppSt
 
 export interface NewSubstitutionInput {
   date: string;
+  start: string;
+  end: string;
   lesson: number;
   class: string;
   absentTeacherId: string;

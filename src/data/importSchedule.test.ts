@@ -21,7 +21,7 @@ const baseState: AppState = {
     },
   ],
   schedule: [
-    { teacherId: "tkachenko-ihor", weekday: 2, lesson: 1, class: "11", subject: "інформатика", room: "Hardlab" },
+    { teacherId: "tkachenko-ihor", weekday: 2, start: "09:00", end: "09:45", lesson: 1, class: "11", subject: "інформатика", room: "Hardlab" },
   ],
   substitutions: [],
   attempts: [],
@@ -33,7 +33,7 @@ const importWithTeacher = (extra: Partial<ScheduleImport["teachers"][number]> = 
   bells: baseState.bells,
   teachers: [{ id: "tkachenko-ihor", name: "Ткаченко Ігор", subjects: ["інформатика"], ...extra }],
   schedule: [
-    { teacherId: "tkachenko-ihor", weekday: 3, lesson: 2, class: "9-Б", subject: "інформатика", room: "Hardlab" },
+    { teacherId: "tkachenko-ihor", weekday: 3, start: "09:55", end: "10:40", lesson: 2, class: "9-Б", subject: "інформатика", room: "Hardlab" },
   ],
 });
 
@@ -68,7 +68,7 @@ describe("importSchedule — збереження профільних полі�
       bells: baseState.bells,
       teachers: [],
       schedule: [
-        { teacherId: "tkachenko-ihor", weekday: 2, lesson: 1, class: "11", subject: "інформатика", room: "Softlab" },
+        { teacherId: "tkachenko-ihor", weekday: 2, start: "09:00", end: "09:45", lesson: 1, class: "11", subject: "інформатика", room: "Softlab" },
       ],
     };
     const next = importSchedule(baseState, scheduleOnly);
@@ -84,6 +84,8 @@ describe("importSchedule — збереження профільних полі�
         {
           id: "sub-1",
           date: "2026-09-02",
+          start: "09:00",
+          end: "09:45",
           lesson: 1,
           class: "11",
           absentTeacherId: "tkachenko-ihor",
@@ -100,33 +102,71 @@ describe("importSchedule — збереження профільних полі�
   });
 });
 
-describe("ключ запису розкладу враховує ланку школи", () => {
+describe("ключ запису розкладу — вчитель, день і ЧАС початку", () => {
   const base: AppState = {
     ...baseState,
-    schedule: [{ teacherId: "t1", weekday: 1, lesson: 1, class: "3", subject: "читання", room: "каб-1" }],
+    schedule: [{ teacherId: "t1", weekday: 1, start: "09:00", end: "09:45", lesson: 1, class: "3", subject: "читання", room: "каб-1" }],
   };
 
-  it("урок 1 у 3 класі й урок 1 у 9-А того самого дня — два різні записи, не затирають одне одного", () => {
+  it("уроки в різний час того самого дня — два різні записи, не затирають одне одного", () => {
     const next = importSchedule(base, {
       version: 1,
       updatedAt: "2026-09-10",
       bells: base.bells,
       teachers: [],
-      schedule: [{ teacherId: "t1", weekday: 1, lesson: 1, class: "9-А", subject: "фізика", room: "каб-9" }],
+      // Той самий номер уроку (1), але інший час — у 9-А своя ланка й свій дзвінок.
+      schedule: [{ teacherId: "t1", weekday: 1, start: "09:55", end: "10:40", lesson: 1, class: "9-А", subject: "фізика", room: "каб-9" }],
     });
     expect(next.schedule).toHaveLength(2);
     expect(next.schedule.map((e) => e.class).sort()).toEqual(["3", "9-А"]);
   });
 
-  it("той самий клас і номер — і далі заміщення, а не дубль", () => {
+  it("той самий час — і далі заміщення, а не дубль", () => {
     const next = importSchedule(base, {
       version: 1,
       updatedAt: "2026-09-10",
       bells: base.bells,
       teachers: [],
-      schedule: [{ teacherId: "t1", weekday: 1, lesson: 1, class: "3", subject: "математика", room: "каб-2" }],
+      schedule: [{ teacherId: "t1", weekday: 1, start: "09:00", end: "09:45", lesson: 1, class: "3", subject: "математика", room: "каб-2" }],
     });
     expect(next.schedule).toHaveLength(1);
     expect(next.schedule[0].subject).toBe("математика");
+  });
+});
+
+describe("replaceSchedule — збирання розкладу заново", () => {
+  const base: AppState = {
+    ...baseState,
+    schedule: [
+      { teacherId: "t1", weekday: 1, start: "09:00", end: "09:45", lesson: 1, class: "3", subject: "читання", room: "к1" },
+      { teacherId: "t9", weekday: 2, start: "", end: "", lesson: 13, class: "2", subject: "старе сміття", room: "" },
+    ],
+  };
+
+  const fresh = {
+    version: 1,
+    updatedAt: "2026-09-10",
+    bells: base.bells,
+    teachers: [],
+    replaceSchedule: true,
+    schedule: [
+      { teacherId: "t1", weekday: 1, start: "10:00", end: "10:45", lesson: 1, class: "3", subject: "читання", room: "к1" },
+    ],
+  };
+
+  it("замінює розклад повністю — старі записи, включно з битими, зникають", () => {
+    const next = importSchedule(base, fresh);
+    expect(next.schedule).toHaveLength(1);
+    expect(next.schedule[0]).toMatchObject({ start: "10:00", end: "10:45" });
+  });
+
+  it("без прапорця — стара поведінка, старі записи лишаються", () => {
+    const next = importSchedule(base, { ...fresh, replaceSchedule: false });
+    expect(next.schedule).toHaveLength(3);
+  });
+
+  it("профілі вчителів не зачіпаються навіть при повній заміні розкладу", () => {
+    const next = importSchedule(base, fresh);
+    expect(next.teachers).toEqual(base.teachers);
   });
 });

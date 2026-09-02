@@ -1,8 +1,9 @@
 import type { ScheduleEntry } from "../types/schedule";
 import type { AppState } from "../types/state";
-import type { ImportTeacher, ScheduleImport } from "../types/importFormat";
+import type { ImportScheduleEntry, ImportTeacher, ScheduleImport } from "../types/importFormat";
 import type { Teacher } from "../types/teacher";
-import { levelIdsForClass } from "../ranking/levels";
+import { slotInterval } from "../ranking/levels";
+import type { Bell } from "../types/schedule";
 
 function mergeTeacher(existing: Teacher | undefined, incoming: ImportTeacher): Teacher {
   return {
@@ -19,11 +20,26 @@ function mergeTeacher(existing: Teacher | undefined, incoming: ImportTeacher): T
   };
 }
 
-/** Ключ запису розкладу. Номер уроку унікальний лише в межах ланки школи,
- *  тож без неї урок 1 у 3 класі й урок 1 у 9-А того самого дня дали б один
- *  ключ і затерли б одне одного при імпорті. */
-export function scheduleKey(entry: Pick<ScheduleEntry, "teacherId" | "weekday" | "lesson" | "class">): string {
-  return `${entry.teacherId}|${entry.weekday}|${entry.lesson}|${levelIdsForClass(entry.class).sort().join(",")}`;
+/** Ключ запису розкладу — вчитель, день і ЧАС початку. Номер уроку для
+ *  цього непридатний: у кожної ланки школи своя нумерація, тож урок 1 у
+ *  3 класі й урок 1 у 9-А того самого дня затирали б одне одного. */
+export function scheduleKey(entry: Pick<ScheduleEntry, "teacherId" | "weekday" | "start">): string {
+  return `${entry.teacherId}|${entry.weekday}|${entry.start}`;
+}
+
+/** Час запису імпорту: явний `start`/`end`, інакше виведений із `bells`
+ *  за парою (клас → ланка, номер уроку). `undefined` — валідація імпорту
+ *  такий запис не пропускає, тож сюди він не доходить. */
+export function importEntryTimes(entry: ImportScheduleEntry, bells: Bell[]): { start: string; end: string } | undefined {
+  if (entry.start && entry.end) return { start: entry.start, end: entry.end };
+  return slotInterval(bells, entry.class, entry.lesson);
+}
+
+function toScheduleEntry(entry: ImportScheduleEntry, bells: Bell[]): ScheduleEntry | undefined {
+  const times = importEntryTimes(entry, bells);
+  if (!times) return undefined;
+  const { start: _s, end: _e, ...rest } = entry;
+  return { ...rest, start: times.start, end: times.end };
 }
 
 function mergeSchedule(existing: ScheduleEntry[], incoming: ScheduleEntry[]): ScheduleEntry[] {
@@ -38,7 +54,8 @@ function mergeSchedule(existing: ScheduleEntry[], incoming: ScheduleEntry[]): Sc
  *  що прийшли в JSON. Заміни, спроби й статистику не чіпає. Вчитель
  *  оновлюється патчем поверх наявного запису (поле відсутнє в імпорті —
  *  лишається старе значення), запис розкладу — заміною за ключем
- *  (teacherId, weekday, lesson). */
+ *  (teacherId, weekday, start). З `replaceSchedule: true` розклад
+ *  замінюється цілком (вчителів це не стосується). */
 export function importSchedule(state: AppState, json: ScheduleImport): AppState {
   const teacherById = new Map(state.teachers.map((t) => [t.id, t]));
   for (const incoming of json.teachers) {
@@ -51,6 +68,9 @@ export function importSchedule(state: AppState, json: ScheduleImport): AppState 
     updatedAt: json.updatedAt,
     bells: json.bells,
     teachers: Array.from(teacherById.values()),
-    schedule: mergeSchedule(state.schedule, json.schedule),
+    schedule: mergeSchedule(
+      json.replaceSchedule ? [] : state.schedule,
+      json.schedule.map((e) => toScheduleEntry(e, json.bells)).filter((e): e is ScheduleEntry => e !== undefined)
+    ),
   };
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Bell } from "../types/schedule";
-import { bellsForSlot, intervalsOverlap, levelIdsForClass, slotBell, slotInterval, slotsOverlap } from "./levels";
+import { bellsForSlot, intervalsOverlap, levelIdsForClass, slotInterval } from "./levels";
 
 /** Реальні дзвінки школи (вересень 2026). Ключове: збігається лише 1-й урок,
  *  решта зсунуті, а уроки 3 і 5 початкової накривають по два уроки старшої. */
@@ -54,7 +54,7 @@ describe("levelIdsForClass", () => {
   });
 });
 
-describe("slotInterval / slotBell", () => {
+describe("slotInterval — переведення номера уроку в час на межі імпорту", () => {
   it("той самий номер уроку в різних ланках дає різний час", () => {
     expect(slotInterval(bells, "3", 2)).toEqual({ start: "10:50", end: "11:35" });
     expect(slotInterval(bells, "9-А", 2)).toEqual({ start: "11:05", end: "11:50" });
@@ -66,7 +66,7 @@ describe("slotInterval / slotBell", () => {
 
   it("номера, якого в цій ланці немає, не існує", () => {
     expect(slotInterval(bells, "3", 8)).toBeUndefined();
-    expect(slotBell(bells, "9-А", 8)).toEqual({ lesson: 8, start: "17:25", end: "18:10", level: "senior" });
+    expect(slotInterval(bells, "9-А", 8)).toEqual({ start: "17:25", end: "18:10" });
   });
 
   it("дзвінок без ланки чинний для всіх — старі бази поводяться як раніше", () => {
@@ -83,32 +83,5 @@ describe("intervalsOverlap", () => {
 
   it("часткова накладка — конфлікт", () => {
     expect(intervalsOverlap({ start: "10:50", end: "11:35" }, { start: "11:05", end: "11:50" })).toBe(true);
-  });
-});
-
-describe("slotsOverlap — та сама діра, через яку зайнятий вчитель вважався вільним", () => {
-  it("урок 2 початкової накладається на урок 2 старшої при різних номерах? — ні, тут номери рівні, але час зсунутий", () => {
-    expect(slotsOverlap(bells, { class: "3", lesson: 2 }, { class: "9-А", lesson: 2 })).toBe(true);
-  });
-
-  it("РІЗНІ номери, що перетинаються в часі, ловляться (урок 3 початкової × урок 2 старшої)", () => {
-    // 11:45–12:30 проти 11:05–11:50 — спільні 11:45–11:50
-    expect(slotsOverlap(bells, { class: "3", lesson: 3 }, { class: "9-А", lesson: 2 })).toBe(true);
-  });
-
-  it("урок 3 початкової накриває одразу два уроки старшої", () => {
-    expect(slotsOverlap(bells, { class: "3", lesson: 3 }, { class: "11", lesson: 3 })).toBe(true);
-  });
-
-  it("ОДНАКОВІ номери, що НЕ перетинаються в часі, не вважаються конфліктом", () => {
-    // урок 6 початкової 15:25–16:10 проти уроку 5 старшої 14:40–15:25 — стик, не накладка
-    expect(slotsOverlap(bells, { class: "3", lesson: 6 }, { class: "9-А", lesson: 5 })).toBe(false);
-    // урок 1 початкової проти уроку 2 старшої
-    expect(slotsOverlap(bells, { class: "3", lesson: 1 }, { class: "9-А", lesson: 2 })).toBe(false);
-  });
-
-  it("без дзвінків падає назад на порівняння номерів", () => {
-    expect(slotsOverlap([], { class: "3", lesson: 2 }, { class: "9-А", lesson: 2 })).toBe(true);
-    expect(slotsOverlap([], { class: "3", lesson: 2 }, { class: "9-А", lesson: 3 })).toBe(false);
   });
 });

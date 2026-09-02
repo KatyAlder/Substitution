@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useAppState } from "../data/AppStateContext";
 import { currentMonth, monthLabel } from "../profile/stats";
 import { dateToWeekday, weekdayName } from "../ranking/presence";
-import { slotBell } from "../ranking/levels";
 import { deadEndsForMonth, shiftMonth, teacherMonthlyRows } from "../stats/schoolStats";
 
 export function StatisticsScreen() {
@@ -61,11 +60,9 @@ export function StatisticsScreen() {
         ) : (
           <div className="stats-deadends">
             {deadEnds.map((row) => {
-              const bell = slotBell(state.bells, row.class, row.lesson);
               return (
                 <div key={row.id} className="stats-deadends__item">
-                  {weekdayName(dateToWeekday(row.date))}, {row.date} · {row.class} клас · урок {row.lesson}
-                  {bell ? ` (${bell.start}–${bell.end})` : ""} · відсутній: {row.absentTeacherName}
+                  {weekdayName(dateToWeekday(row.date))}, {row.date} · {row.class} клас · урок {row.lesson} ({row.start}–{row.end}) · відсутній: {row.absentTeacherName}
                 </div>
               );
             })}

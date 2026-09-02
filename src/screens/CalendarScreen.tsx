@@ -108,7 +108,7 @@ export function CalendarScreen() {
       {!selectedValue ? (
         <p className="screen__empty">Обери вчителя, клас або авдиторію.</p>
       ) : (
-        <DayAgenda slots={filteredSlots} teachers={state.teachers} bells={state.bells} presence={presence} />
+        <DayAgenda slots={filteredSlots} teachers={state.teachers} presence={presence} />
       )}
     </main>
   );

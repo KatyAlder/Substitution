@@ -30,6 +30,9 @@ export function ImportScreen() {
     const confirmMsg =
       `Нових вчителів: ${summary.newTeachers.length}, оновлених: ${summary.updatedTeachers.length}. ` +
       `Нових записів розкладу: ${summary.newScheduleCount}, оновлених: ${summary.updatedScheduleCount}. ` +
+      (summary.removedScheduleCount > 0
+        ? `УВАГА: розклад замінюється повністю — ${summary.removedScheduleCount} наявних записів буде видалено. `
+        : "") +
       "Імпортувати?";
     if (!window.confirm(confirmMsg)) return;
     setState((prev) => importSchedule(prev, parsed.data));
@@ -86,6 +89,12 @@ export function ImportScreen() {
               <p className="parse-panel__warning">
                 Розклад посилається на вчителів, яких немає ні в базі, ні серед імпортованих —
                 можливо, одрук в id: {summary.unknownTeacherIds.join(", ")}
+              </p>
+            )}
+            {summary.removedScheduleCount > 0 && (
+              <p className="parse-panel__warning">
+                Розклад буде замінено повністю: {summary.removedScheduleCount} наявних записів, яких немає в цьому
+                файлі, буде видалено. Профілі вчителів це не зачіпає.
               </p>
             )}
             {summary.bellsWithoutLevel && (

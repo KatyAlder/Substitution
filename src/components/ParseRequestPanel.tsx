@@ -27,8 +27,8 @@ export function ParseRequestPanel({ state, onCreate }: Props) {
   const [manualDate, setManualDate] = useState<string | null>(null);
   const [manualWholeDay, setManualWholeDay] = useState<boolean | null>(null);
   const [manualMode, setManualMode] = useState<SubstitutionMode | null>(null);
-  const [selectedLesson, setSelectedLesson] = useState<number | null>(null);
-  const [uncheckedLessons, setUncheckedLessons] = useState<Set<number>>(new Set());
+  const [selectedStart, setSelectedStart] = useState<string | null>(null);
+  const [uncheckedLessons, setUncheckedLessons] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
 
   const today = todayIso();
@@ -44,19 +44,19 @@ export function ParseRequestPanel({ state, onCreate }: Props) {
   const mode = manualMode ?? suggestedMode(date, today);
   const weekday = dateToWeekday(date);
 
-  const dayLessons = teacher ? teacherDayLessons(state.schedule, state.bells, teacher.id, weekday) : [];
+  const dayLessons = teacher ? teacherDayLessons(state.schedule, teacher.id, weekday) : [];
 
   const resolution = teacher ? resolveBySlot(state.bells, dayLessons, { lesson: parsed.lesson, time: parsed.time }) : {};
-  const effectiveLesson = selectedLesson ?? resolution.matched?.entry.lesson ?? null;
-  const selectedDayLesson = dayLessons.find((l) => l.entry.lesson === effectiveLesson) ?? null;
+  const effectiveStart = selectedStart ?? resolution.matched?.entry.start ?? null;
+  const selectedDayLesson = dayLessons.find((l) => l.entry.start === effectiveStart) ?? null;
   const singleConflict = selectedDayLesson
-    ? findConflict(state.substitutions, date, selectedDayLesson.entry.lesson, selectedDayLesson.entry.class)
+    ? findConflict(state.substitutions, date, selectedDayLesson.entry, selectedDayLesson.entry.class)
     : undefined;
 
   const checklistItems = dayLessons.map((lesson) => ({
     lesson,
-    checked: !uncheckedLessons.has(lesson.entry.lesson),
-    conflict: findConflict(state.substitutions, date, lesson.entry.lesson, lesson.entry.class),
+    checked: !uncheckedLessons.has(lesson.entry.start),
+    conflict: findConflict(state.substitutions, date, lesson.entry, lesson.entry.class),
   }));
   const checklistSelected = checklistItems.filter((item) => item.checked && !item.conflict);
 
@@ -66,8 +66,8 @@ export function ParseRequestPanel({ state, onCreate }: Props) {
     checklistSelected.map((item) => ({
       class: item.lesson.entry.class,
       lesson: item.lesson.entry.lesson,
-      start: item.lesson.bell?.start ?? "?",
-      end: item.lesson.bell?.end ?? "?",
+      start: item.lesson.entry.start,
+      end: item.lesson.entry.end,
     }))
   );
 
@@ -77,16 +77,16 @@ export function ParseRequestPanel({ state, onCreate }: Props) {
     setManualDate(null);
     setManualWholeDay(null);
     setManualMode(null);
-    setSelectedLesson(null);
+    setSelectedStart(null);
     setUncheckedLessons(new Set());
     setExpanded(false);
   }
 
-  function handleToggleLesson(lessonNumber: number) {
+  function handleToggleLesson(start: string) {
     setUncheckedLessons((prev) => {
       const next = new Set(prev);
-      if (next.has(lessonNumber)) next.delete(lessonNumber);
-      else next.add(lessonNumber);
+      if (next.has(start)) next.delete(start);
+      else next.add(start);
       return next;
     });
   }
@@ -96,6 +96,8 @@ export function ParseRequestPanel({ state, onCreate }: Props) {
     onCreate([
       {
         date,
+        start: selectedDayLesson.entry.start,
+        end: selectedDayLesson.entry.end,
         lesson: selectedDayLesson.entry.lesson,
         class: selectedDayLesson.entry.class,
         absentTeacherId: teacher.id,
@@ -110,6 +112,8 @@ export function ParseRequestPanel({ state, onCreate }: Props) {
     onCreate(
       checklistSelected.map((item) => ({
         date,
+        start: item.lesson.entry.start,
+        end: item.lesson.entry.end,
         lesson: item.lesson.entry.lesson,
         class: item.lesson.entry.class,
         absentTeacherId: teacher.id,
@@ -174,7 +178,7 @@ export function ParseRequestPanel({ state, onCreate }: Props) {
       {teacher && !wholeDay && (
         <div className="parse-panel__field">
           <div className="parse-panel__label">Урок</div>
-          {resolution.nearestBell && !effectiveLesson && (
+          {resolution.nearestBell && !effectiveStart && (
             <div className="parse-panel__hint">
               час поза розкладом — найближчий дзвінок: {resolution.nearestBell.start}–{resolution.nearestBell.end}
             </div>
@@ -184,11 +188,11 @@ export function ParseRequestPanel({ state, onCreate }: Props) {
           ) : (
             <ChipPicker
               items={dayLessons.map((l) => ({
-                value: String(l.entry.lesson),
-                label: `урок ${l.entry.lesson}${l.bell ? ` (${l.bell.start}–${l.bell.end})` : ""} · ${l.entry.class} клас · ${l.entry.subject}`,
+                value: l.entry.start,
+                label: `${l.entry.start}–${l.entry.end} · урок ${l.entry.lesson} · ${l.entry.class} клас · ${l.entry.subject}`,
               }))}
-              selectedValue={effectiveLesson !== null ? String(effectiveLesson) : null}
-              onSelect={(v) => setSelectedLesson(Number(v))}
+              selectedValue={effectiveStart}
+              onSelect={(v) => setSelectedStart(v)}
             />
           )}
           {singleConflict && (

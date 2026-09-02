@@ -5,20 +5,20 @@ import { findConflict, resolveBySlot, suggestedMode, teacherDayLessons } from ".
 const { schedule, bells, substitutions } = seedState;
 
 describe("teacherDayLessons", () => {
-  it("уроки Ткаченка у вівторок, відсортовані за номером", () => {
-    const lessons = teacherDayLessons(schedule, bells, "tkachenko-ihor", 2);
+  it("уроки Ткаченка у вівторок, відсортовані за часом", () => {
+    const lessons = teacherDayLessons(schedule, "tkachenko-ihor", 2);
     expect(lessons.map((l) => l.entry.lesson)).toEqual([1, 3]);
-    expect(lessons[0].bell).toEqual({ lesson: 1, start: "09:00", end: "09:45" });
+    expect(lessons[0].entry.start).toBe("09:00");
     expect(lessons[1].entry.class).toBe("11");
   });
 
   it("порожньо, якщо вчитель того дня не викладає", () => {
-    expect(teacherDayLessons(schedule, bells, "tkachenko-ihor", 5)).toEqual([]);
+    expect(teacherDayLessons(schedule, "tkachenko-ihor", 5)).toEqual([]);
   });
 });
 
 describe("resolveBySlot", () => {
-  const lessons = teacherDayLessons(schedule, bells, "tkachenko-ihor", 2);
+  const lessons = teacherDayLessons(schedule, "tkachenko-ihor", 2);
 
   it("номер уроку, який учитель того дня веде — matched", () => {
     const result = resolveBySlot(bells, lessons, { lesson: 3 });
@@ -56,13 +56,13 @@ describe("resolveBySlot", () => {
 });
 
 describe("findConflict", () => {
-  it("знаходить наявну заміну на той самий date/lesson/class", () => {
-    const conflict = findConflict(substitutions, "2026-09-08", 3, "11");
+  it("знаходить наявну заміну, що перетинається в часі, на той самий клас", () => {
+    const conflict = findConflict(substitutions, "2026-09-08", { start: "10:50", end: "11:35" }, "11");
     expect(conflict?.id).toBe("sub-1");
   });
 
   it("немає конфлікту для вільного слоту", () => {
-    expect(findConflict(substitutions, "2026-09-08", 1, "11")).toBeUndefined();
+    expect(findConflict(substitutions, "2026-09-08", { start: "09:00", end: "09:45" }, "11")).toBeUndefined();
   });
 });
 

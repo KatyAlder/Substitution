@@ -1,8 +1,10 @@
 import { splitClassLabel } from "../ranking/classes";
-import { shortWeekdayName } from "../ranking/presence";
+import { shortWeekdayName, toMinutes } from "../ranking/presence";
 import type { ScheduleEntry } from "../types/schedule";
 
 const WEEKDAYS = [1, 2, 3, 4, 5];
+
+const HHMM = /^\d{1,2}:\d{2}$/;
 
 /** Чернетковий рядок редактора розкладу. "Спареність" зроблена явною
  *  (перемикач + список класів), а не роздільником у вільному тексті:
@@ -12,6 +14,8 @@ const WEEKDAYS = [1, 2, 3, 4, 5];
  *  календар/ранжування не зачеплені. */
 export interface ScheduleRow {
   weekday: number;
+  start: string;
+  end: string;
   lesson: number;
   paired: boolean;
   classes: string[];
@@ -23,6 +27,8 @@ export function entryToRow(entry: Omit<ScheduleEntry, "teacherId">): ScheduleRow
   const parts = splitClassLabel(entry.class);
   return {
     weekday: entry.weekday,
+    start: entry.start,
+    end: entry.end,
     lesson: entry.lesson,
     paired: parts.length > 1,
     classes: parts.length > 1 ? parts : [entry.class],
@@ -37,6 +43,8 @@ export function rowToEntry(row: ScheduleRow): Omit<ScheduleEntry, "teacherId"> {
     : (row.classes[0] ?? "").trim();
   return {
     weekday: row.weekday,
+    start: row.start.trim(),
+    end: row.end.trim(),
     lesson: row.lesson,
     class: cls,
     subject: row.subject.trim(),
@@ -45,12 +53,14 @@ export function rowToEntry(row: ScheduleRow): Omit<ScheduleEntry, "teacherId"> {
 }
 
 export function emptyRow(): ScheduleRow {
-  return { weekday: 1, lesson: 1, paired: false, classes: [""], subject: "", room: "" };
+  return { weekday: 1, start: "", end: "", lesson: 1, paired: false, classes: [""], subject: "", room: "" };
 }
 
 export function isScheduleRowValid(row: ScheduleRow): boolean {
   if (!WEEKDAYS.includes(row.weekday)) return false;
   if (!Number.isInteger(row.lesson) || row.lesson < 1) return false;
+  if (!HHMM.test(row.start) || !HHMM.test(row.end)) return false;
+  if (toMinutes(row.start) >= toMinutes(row.end)) return false;
   const filled = row.classes.map((c) => c.trim()).filter(Boolean);
   if (filled.length < (row.paired ? 2 : 1)) return false;
   if (!row.subject.trim()) return false;
@@ -62,9 +72,12 @@ interface Props {
   onChange: (rows: ScheduleRow[]) => void;
   subjectOptions: string[];
   roomOptions: string[];
+  /** Часи з розкладу дзвінків — підказки, щоб не набирати вручну. */
+  startOptions: string[];
+  endOptions: string[];
 }
 
-export function ScheduleListEditor({ rows, onChange, subjectOptions, roomOptions }: Props) {
+export function ScheduleListEditor({ rows, onChange, subjectOptions, roomOptions, startOptions, endOptions }: Props) {
   function update(index: number, patch: Partial<ScheduleRow>) {
     onChange(rows.map((r, i) => (i === index ? { ...r, ...patch } : r)));
   }
@@ -117,13 +130,30 @@ export function ScheduleListEditor({ rows, onChange, subjectOptions, roomOptions
               ))}
             </select>
             <input
+              className="schedule-editor__time"
+              value={row.start}
+              onChange={(e) => update(i, { start: e.target.value })}
+              placeholder="10:00"
+              aria-label="початок"
+              list="schedule-starts"
+            />
+            <input
+              className="schedule-editor__time"
+              value={row.end}
+              onChange={(e) => update(i, { end: e.target.value })}
+              placeholder="10:45"
+              aria-label="кінець"
+              list="schedule-ends"
+            />
+            <input
               className="schedule-editor__lesson"
               type="number"
               min={1}
               step={1}
               value={row.lesson}
               onChange={(e) => update(i, { lesson: Math.trunc(Number(e.target.value)) })}
-              aria-label="номер уроку"
+              aria-label="номер уроку (лише підпис)"
+              title="Номер уроку — лише підпис, на логіку не впливає"
             />
             <button
               type="button"
@@ -202,6 +232,16 @@ export function ScheduleListEditor({ rows, onChange, subjectOptions, roomOptions
         </div>
       ))}
 
+      <datalist id="schedule-starts">
+        {startOptions.map((t) => (
+          <option key={t} value={t} />
+        ))}
+      </datalist>
+      <datalist id="schedule-ends">
+        {endOptions.map((t) => (
+          <option key={t} value={t} />
+        ))}
+      </datalist>
       <datalist id="schedule-subjects">
         {subjectOptions.map((s) => (
           <option key={s} value={s} />

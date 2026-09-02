@@ -7,7 +7,6 @@ import { createSubstitutions, deleteSubstitution, markBroadcast, markDeadEnd, re
 import type { NewSubstitutionInput } from "../data/actions";
 import { useAppState } from "../data/AppStateContext";
 import { weekdayName } from "../ranking/presence";
-import { slotBell } from "../ranking/levels";
 import { TIERS, rankCandidates } from "../ranking/rank";
 import type { AttemptResult } from "../types/substitution";
 import { buildSubstitutionMessage } from "../whatsapp";
@@ -42,9 +41,8 @@ export function CandidatesScreen() {
 
   const result = useMemo(() => (selected ? rankCandidates(state, selected) : null), [state, selected]);
   const absentTeacher = selected ? state.teachers.find((t) => t.id === selected.absentTeacherId) : undefined;
-  const bell = selected ? slotBell(state.bells, selected.class, selected.lesson) : undefined;
 
-  const whatsappMessage = selected && result ? buildSubstitutionMessage(selected, result.weekday, bell) : "";
+  const whatsappMessage = selected && result ? buildSubstitutionMessage(selected, result.weekday) : "";
 
   const attemptsForSelected = useMemo(
     () => (selected ? state.attempts.filter((a) => a.substitutionId === selected.id) : []),
@@ -93,7 +91,6 @@ export function CandidatesScreen() {
       {pendingBroadcast.length > 0 && (
         <BroadcastPanel
           substitutions={pendingBroadcast}
-          bells={state.bells}
           onMarkAllInChat={handleMarkAllInChat}
           onDelete={handleDeleteSubstitution}
         />
@@ -105,7 +102,6 @@ export function CandidatesScreen() {
         <SlotPicker
           substitutions={queueSubstitutions}
           teachers={state.teachers}
-          bells={state.bells}
           selectedId={selectedId}
           onSelect={setSelectedId}
           onDelete={handleDeleteSubstitution}
