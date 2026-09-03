@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import type { AppState } from "../types/state";
-import { isConfigured, signIn as googleSignIn, signOut as googleSignOut } from "./googleAuth";
+import {
+  getAccessToken,
+  isConfigured,
+  signIn as googleSignIn,
+  signOut as googleSignOut,
+  wasSignedIn,
+} from "./googleAuth";
 import { createStateFile, findStateFile, getFileMeta, loadStateFile, uploadStateFile } from "./googleDrive";
 import { pickNewer } from "./pickNewer";
 
@@ -19,7 +25,11 @@ export interface SyncControls {
 
 export function useDriveSync(state: AppState, setState: Dispatch<SetStateAction<AppState>>): SyncControls {
   const enabled = isConfigured();
-  const [status, setStatus] = useState<SyncStatus>(enabled ? "local" : "off");
+  // Якщо користувач уже входив — стартуємо з "saving": тихе відновлення сесії
+  // нижче або підхопить її без вікна, або відкотить на "local".
+  const [status, setStatus] = useState<SyncStatus>(
+    enabled ? (wasSignedIn() ? "saving" : "local") : "off",
+  );
   const [message, setMessage] = useState<string | null>(null);
   const fileIdRef = useRef<string | null>(null);
   const lastModifiedRef = useRef<string | null>(null);
@@ -62,33 +72,66 @@ export function useDriveSync(state: AppState, setState: Dispatch<SetStateAction<
     };
   }, [state, push]);
 
+  // Прив'язка до файлу в Drive: знайти наявний і злити, або створити новий.
+  // Спільна частина видимого входу й тихого відновлення сесії при старті.
+  const attachToDrive = useCallback(async () => {
+    const existing = await findStateFile();
+    if (existing) {
+      fileIdRef.current = existing.id;
+      lastModifiedRef.current = existing.modifiedTime;
+      const remote = await loadStateFile(existing.id);
+      const merged = pickNewer(stateRef.current, remote);
+      if (merged !== remote) {
+        const uploaded = await uploadStateFile(existing.id, merged);
+        lastModifiedRef.current = uploaded.modifiedTime;
+      }
+      if (merged !== stateRef.current) setState(merged);
+    } else {
+      const created = await createStateFile(stateRef.current);
+      fileIdRef.current = created.id;
+      lastModifiedRef.current = created.modifiedTime;
+    }
+  }, [setState]);
+
+  // Тихе відновлення при старті: якщо користувач уже входив на цьому пристрої і
+  // сесія Google ще жива — підхоплюємо токен без вікна й одразу синхронізуємось.
+  // Якщо сесія згасла — просто лишаємось на "local" (кнопка "Увійти").
+  // Гард — уже прив'язаний файл, а не "лише раз": так подвійний виклик ефекту в
+  // StrictMode коректно перезапускає скасований прохід замість зависання.
+  useEffect(() => {
+    if (!enabled || fileIdRef.current || !wasSignedIn()) return;
+    let cancelled = false;
+    void (async () => {
+      setStatus("saving");
+      try {
+        await getAccessToken();
+        if (cancelled) return;
+        await attachToDrive();
+        if (cancelled) return;
+        setStatus("ok");
+      } catch {
+        if (cancelled) return;
+        fileIdRef.current = null;
+        setStatus("local");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, attachToDrive]);
+
   const signIn = useCallback(async () => {
     setStatus("saving");
     try {
       await googleSignIn();
-      const existing = await findStateFile();
-      if (existing) {
-        fileIdRef.current = existing.id;
-        lastModifiedRef.current = existing.modifiedTime;
-        const remote = await loadStateFile(existing.id);
-        const merged = pickNewer(stateRef.current, remote);
-        if (merged !== remote) {
-          const uploaded = await uploadStateFile(existing.id, merged);
-          lastModifiedRef.current = uploaded.modifiedTime;
-        }
-        if (merged !== stateRef.current) setState(merged);
-      } else {
-        const created = await createStateFile(stateRef.current);
-        fileIdRef.current = created.id;
-        lastModifiedRef.current = created.modifiedTime;
-      }
+      await attachToDrive();
       setStatus("ok");
     } catch (error) {
       setStatus("error");
       fileIdRef.current = null;
       throw error;
     }
-  }, [setState]);
+  }, [attachToDrive]);
 
   const signOut = useCallback(() => {
     googleSignOut();
