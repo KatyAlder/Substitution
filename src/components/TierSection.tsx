@@ -1,3 +1,4 @@
+import { SHORTLIST_LIMIT } from "../config/settings";
 import { TIER_LABELS, type RankedCandidate, type Tier } from "../ranking/rank";
 import type { Attempt, AttemptResult } from "../types/substitution";
 import { buildWhatsAppUrl } from "../whatsapp";
@@ -11,6 +12,8 @@ interface Props {
   whatsappMessage: string;
   attempts: Attempt[];
   onResult: (teacherId: string, result: AttemptResult) => void;
+  shortlist: string[];
+  onToggleShortlist: (teacherId: string) => void;
 }
 
 export function TierSection({
@@ -21,6 +24,8 @@ export function TierSection({
   whatsappMessage,
   attempts,
   onResult,
+  shortlist,
+  onToggleShortlist,
 }: Props) {
   if (candidates.length === 0) return null;
 
@@ -40,6 +45,8 @@ export function TierSection({
             .filter((a) => a.teacherId === candidate.teacher.id)
             .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))[0];
 
+          const shortlisted = shortlist.includes(candidate.teacher.id);
+
           return (
             <CandidateCard
               key={candidate.teacher.id}
@@ -49,6 +56,9 @@ export function TierSection({
               whatsappUrl={buildWhatsAppUrl(candidate.teacher, whatsappMessage)}
               latestAttempt={latestAttempt}
               onResult={(result) => onResult(candidate.teacher.id, result)}
+              shortlisted={shortlisted}
+              shortlistDisabled={!shortlisted && shortlist.length >= SHORTLIST_LIMIT}
+              onToggleShortlist={() => onToggleShortlist(candidate.teacher.id)}
             />
           );
         })}

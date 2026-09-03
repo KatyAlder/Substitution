@@ -9,6 +9,10 @@ interface Props {
   whatsappUrl?: string;
   latestAttempt?: Attempt;
   onResult: (result: AttemptResult) => void;
+  shortlisted: boolean;
+  /** Ліміт "на олівці" вичерпано і цей кандидат не серед відзначених. */
+  shortlistDisabled: boolean;
+  onToggleShortlist: () => void;
 }
 
 const ATTEMPT_LABELS: Record<AttemptResult, string> = {
@@ -21,7 +25,17 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function CandidateCard({ candidate, labApplicable, labAvailable, whatsappUrl, latestAttempt, onResult }: Props) {
+export function CandidateCard({
+  candidate,
+  labApplicable,
+  labAvailable,
+  whatsappUrl,
+  latestAttempt,
+  onResult,
+  shortlisted,
+  shortlistDisabled,
+  onToggleShortlist,
+}: Props) {
   const { teacher, lessonsToday, substitutionsThisMonth, consecutiveRefusals, inGoldenHour, bonusCount } = candidate;
 
   return (
@@ -78,6 +92,16 @@ export function CandidateCard({ candidate, labApplicable, labAvailable, whatsapp
         </button>
         <button type="button" className="btn btn--silent" onClick={() => onResult("silent")}>
           Не відповів
+        </button>
+        <button
+          type="button"
+          className={`btn btn--pencil${shortlisted ? " btn--pencil-active" : ""}`}
+          aria-pressed={shortlisted}
+          disabled={shortlistDisabled}
+          title={shortlistDisabled ? "Уже двоє на олівці для цієї заміни" : undefined}
+          onClick={onToggleShortlist}
+        >
+          {shortlisted ? "На олівці ✓" : "На олівець"}
         </button>
       </div>
 

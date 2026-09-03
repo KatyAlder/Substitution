@@ -17,6 +17,10 @@ export interface Substitution {
   substituteId?: string;
   closedVia?: ClosedVia;
   officialCalendarUpdated: boolean;
+  /** Кандидати "на олівці" — кого планую поставити на цю заміну (id вчителів,
+   *  максимум 2). Це лише помітка для планування розподілу на день; на
+   *  ранжування, статистику й закриття заміни не впливає. Відсутнє = порожньо. */
+  shortlist?: string[];
 }
 
 export type AttemptResult = "agreed" | "refused" | "silent";

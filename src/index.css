@@ -179,7 +179,15 @@ body {
 .slot-picker__row {
   display: flex;
   align-items: stretch;
-  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.slot-picker__row--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .slot-picker__row > .slot-picker__item {
@@ -187,21 +195,20 @@ body {
 }
 
 .slot-picker__delete {
-  align-self: center;
+  align-self: stretch;
   flex: none;
   background: none;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: none;
+  border-left: 1px solid var(--border-soft);
   color: var(--text-dim);
   font: inherit;
   line-height: 1;
-  padding: 6px 9px;
+  padding: 6px 12px;
   cursor: pointer;
 }
 
 .slot-picker__delete:hover {
   color: var(--warn);
-  border-color: var(--warn);
 }
 
 .slot-picker__item {
@@ -210,18 +217,12 @@ body {
   align-items: flex-start;
   gap: 2px;
   text-align: left;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  background: none;
+  border: none;
   padding: 10px 12px;
   font: inherit;
   color: inherit;
   cursor: pointer;
-}
-
-.slot-picker__item--active {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .slot-picker__mode {
@@ -252,6 +253,54 @@ body {
   font-size: 0.85rem;
   font-style: italic;
   color: var(--text-dim);
+}
+
+.slot-picker__shortlist {
+  align-self: stretch;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  max-width: 45%;
+  padding: 8px 10px;
+  border-left: 1px solid var(--border-soft);
+}
+
+.slot-picker__shortlist-label {
+  font-size: 0.7rem;
+  font-variant: small-caps;
+  letter-spacing: 0.03em;
+  color: var(--text-dim);
+}
+
+.slot-picker__pencil {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 2px 4px 2px 8px;
+  border-radius: 999px;
+  background: var(--tier2-bg);
+  color: var(--purple-deep);
+}
+
+.slot-picker__pencil-remove {
+  font: inherit;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--purple-deep);
+  cursor: pointer;
+}
+
+.slot-picker__pencil-remove:hover {
+  color: var(--warn);
 }
 
 /* --- підсумок слоту --- */
@@ -493,6 +542,22 @@ body {
 .btn--refuse,
 .btn--silent {
   border-color: var(--warn);
+}
+
+.btn--pencil {
+  border-color: var(--purple);
+  color: var(--purple-deep);
+}
+
+.btn--pencil-active {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: var(--surface);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .candidate-card__attempt {

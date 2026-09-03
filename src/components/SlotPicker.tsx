@@ -8,9 +8,10 @@ interface Props {
   selectedId: string | null;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
+  onUnshortlist: (substitutionId: string, teacherId: string) => void;
 }
 
-export function SlotPicker({ substitutions, teachers, selectedId, onSelect, onDelete }: Props) {
+export function SlotPicker({ substitutions, teachers, selectedId, onSelect, onDelete, onUnshortlist }: Props) {
   return (
     <div className="slot-picker">
       {substitutions.map((sub) => {
@@ -18,11 +19,13 @@ export function SlotPicker({ substitutions, teachers, selectedId, onSelect, onDe
         const weekday = dateToWeekday(sub.date);
         const isSelected = sub.id === selectedId;
 
+        const shortlist = sub.shortlist ?? [];
+
         return (
-          <div key={sub.id} className="slot-picker__row">
+          <div key={sub.id} className={`slot-picker__row${isSelected ? " slot-picker__row--active" : ""}`}>
             <button
               type="button"
-              className={`slot-picker__item${isSelected ? " slot-picker__item--active" : ""}`}
+              className="slot-picker__item"
               onClick={() => onSelect(sub.id)}
             >
               <span
@@ -36,6 +39,28 @@ export function SlotPicker({ substitutions, teachers, selectedId, onSelect, onDe
               </span>
               <span className="slot-picker__sub">відсутній: {absent?.name ?? sub.absentTeacherId}</span>
             </button>
+            {shortlist.length > 0 && (
+              <div className="slot-picker__shortlist">
+                <span className="slot-picker__shortlist-label">на олівці</span>
+                {shortlist.map((teacherId) => {
+                  const t = teachers.find((x) => x.id === teacherId);
+                  return (
+                    <span key={teacherId} className="slot-picker__pencil">
+                      {t?.name ?? teacherId}
+                      <button
+                        type="button"
+                        className="slot-picker__pencil-remove"
+                        title="Прибрати з олівця"
+                        aria-label={`Прибрати ${t?.name ?? teacherId} з олівця`}
+                        onClick={() => onUnshortlist(sub.id, teacherId)}
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
             <button
               type="button"
               className="slot-picker__delete"

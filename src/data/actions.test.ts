@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedState } from "./seed";
-import { createSubstitutions, deleteSubstitution, deleteTeacher, markBroadcast, markDeadEnd, recordAttempt, removeSeedTeachers, setTeacherSchedule, updateTeacher } from "./actions";
+import { createSubstitutions, deleteSubstitution, deleteTeacher, markBroadcast, markDeadEnd, recordAttempt, removeSeedTeachers, setTeacherSchedule, toggleShortlist, updateTeacher } from "./actions";
 import { classesOverlap } from "../ranking/classes";
 
 describe("recordAttempt", () => {
@@ -41,6 +41,47 @@ describe("recordAttempt", () => {
     const sub = next.substitutions.find((s) => s.id === "sub-2")!;
     expect(sub.status).toBe("closed");
     expect(sub.closedVia).toBe("voluntary");
+  });
+});
+
+describe("toggleShortlist", () => {
+  it("додає вчителя на олівець вказаної заміни", () => {
+    const next = toggleShortlist(seedState, "sub-1", "melnyk-taras");
+    expect(next.substitutions.find((s) => s.id === "sub-1")!.shortlist).toEqual(["melnyk-taras"]);
+    expect(next.substitutions.find((s) => s.id === "sub-2")!.shortlist).toBeUndefined();
+  });
+
+  it("повторний виклик прибирає вчителя; порожній список стає undefined", () => {
+    const added = toggleShortlist(seedState, "sub-1", "melnyk-taras");
+    const removed = toggleShortlist(added, "sub-1", "melnyk-taras");
+    expect(removed.substitutions.find((s) => s.id === "sub-1")!.shortlist).toBeUndefined();
+  });
+
+  it("тримає максимум двох — третій не додається", () => {
+    let next = toggleShortlist(seedState, "sub-1", "melnyk-taras");
+    next = toggleShortlist(next, "sub-1", "kravets-maryna");
+    next = toggleShortlist(next, "sub-1", "bondarenko-svitlana");
+    expect(next.substitutions.find((s) => s.id === "sub-1")!.shortlist).toEqual([
+      "melnyk-taras",
+      "kravets-maryna",
+    ]);
+  });
+
+  it("прибрати одного з двох звільняє місце для іншого", () => {
+    let next = toggleShortlist(seedState, "sub-1", "melnyk-taras");
+    next = toggleShortlist(next, "sub-1", "kravets-maryna");
+    next = toggleShortlist(next, "sub-1", "melnyk-taras"); // прибрали
+    next = toggleShortlist(next, "sub-1", "bondarenko-svitlana"); // тепер влазить
+    expect(next.substitutions.find((s) => s.id === "sub-1")!.shortlist).toEqual([
+      "kravets-maryna",
+      "bondarenko-svitlana",
+    ]);
+  });
+
+  it("не мутує вихідний стан", () => {
+    const before = JSON.stringify(seedState);
+    toggleShortlist(seedState, "sub-1", "melnyk-taras");
+    expect(JSON.stringify(seedState)).toBe(before);
   });
 });
 

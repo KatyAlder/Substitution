@@ -1,3 +1,4 @@
+import { SHORTLIST_LIMIT } from "../config/settings";
 import type { ScheduleEntry } from "../types/schedule";
 import type { AppState } from "../types/state";
 import type { AttemptResult, ClosedVia, SubstitutionMode } from "../types/substitution";
@@ -34,6 +35,29 @@ export function recordAttempt(
       : state.substitutions;
 
   return { ...state, attempts: [...state.attempts, attempt], substitutions };
+}
+
+/** Помітка "на олівці" — перемикач: якщо вчителя ще немає в списку заміни й
+ *  список коротший за SHORTLIST_LIMIT, додає; якщо вже є — прибирає. Спроба
+ *  додати понад ліміт — тихий no-op (кнопку в UI за цих умов вимкнено).
+ *  На ранжування/статистику/закриття заміни не впливає. */
+export function toggleShortlist(state: AppState, substitutionId: string, teacherId: string): AppState {
+  return {
+    ...state,
+    substitutions: state.substitutions.map((s) => {
+      if (s.id !== substitutionId) return s;
+      const current = s.shortlist ?? [];
+      let next: string[];
+      if (current.includes(teacherId)) {
+        next = current.filter((id) => id !== teacherId);
+      } else if (current.length < SHORTLIST_LIMIT) {
+        next = [...current, teacherId];
+      } else {
+        return s;
+      }
+      return { ...s, shortlist: next.length > 0 ? next : undefined };
+    }),
+  };
 }
 
 /** Тупик — список кандидатів вичерпано. Причину (розділ 3 ТЗ) свідомо не пишемо. */

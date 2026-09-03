@@ -3,7 +3,14 @@ import { BroadcastPanel } from "../components/BroadcastPanel";
 import { ParseRequestPanel } from "../components/ParseRequestPanel";
 import { SlotPicker } from "../components/SlotPicker";
 import { TierSection } from "../components/TierSection";
-import { createSubstitutions, deleteSubstitution, markBroadcast, markDeadEnd, recordAttempt } from "../data/actions";
+import {
+  createSubstitutions,
+  deleteSubstitution,
+  markBroadcast,
+  markDeadEnd,
+  recordAttempt,
+  toggleShortlist,
+} from "../data/actions";
 import type { NewSubstitutionInput } from "../data/actions";
 import { useAppState } from "../data/AppStateContext";
 import { weekdayName } from "../ranking/presence";
@@ -52,6 +59,15 @@ export function CandidatesScreen() {
   function handleResult(teacherId: string, attemptResult: AttemptResult) {
     if (!selected) return;
     setState((prev) => recordAttempt(prev, selected.id, teacherId, attemptResult));
+  }
+
+  function handleToggleShortlist(teacherId: string) {
+    if (!selected) return;
+    setState((prev) => toggleShortlist(prev, selected.id, teacherId));
+  }
+
+  function handleUnshortlist(substitutionId: string, teacherId: string) {
+    setState((prev) => toggleShortlist(prev, substitutionId, teacherId));
   }
 
   function handleDeadEnd() {
@@ -105,6 +121,7 @@ export function CandidatesScreen() {
           selectedId={selectedId}
           onSelect={setSelectedId}
           onDelete={handleDeleteSubstitution}
+          onUnshortlist={handleUnshortlist}
         />
       )}
 
@@ -136,6 +153,8 @@ export function CandidatesScreen() {
               whatsappMessage={whatsappMessage}
               attempts={attemptsForSelected}
               onResult={handleResult}
+              shortlist={selected.shortlist ?? []}
+              onToggleShortlist={handleToggleShortlist}
             />
           ))}
 
