@@ -47,6 +47,29 @@ let accessToken: string | null = null;
 let tokenExpiry = 0;
 let pendingReject: ((reason: Error) => void) | null = null;
 
+/**
+ * Сесія Google більше не дійсна (Drive повернув 401 навіть на свіжий токен) —
+ * потрібен видимий повторний вхід. Викличок мапить це в стан "local", а не
+ * "помилка" + вічний повтор.
+ */
+export class AuthExpiredError extends Error {
+  constructor() {
+    super("Сесія Google протухла — потрібен повторний вхід");
+    this.name = "AuthExpiredError";
+  }
+}
+
+/** Скинути закешований токен (напр. Drive відповів 401 — токен уже недійсний). */
+export function invalidateAccessToken(): void {
+  accessToken = null;
+  tokenExpiry = 0;
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 function hydrateFromStorage(): void {
   try {
     const raw = localStorage.getItem(TOKEN_KEY);
@@ -179,8 +202,8 @@ async function requestToken(prompt: "" | "none"): Promise<string> {
  * новий тихо (`prompt: "none"` — без вікна). Кидає помилку, якщо сесія Google
  * згасла й потрібен видимий вхід — тоді викликач має показати кнопку "Увійти".
  */
-export async function getAccessToken(): Promise<string> {
-  if (accessToken && Date.now() < tokenExpiry) return accessToken;
+export async function getAccessToken(forceRefresh = false): Promise<string> {
+  if (!forceRefresh && accessToken && Date.now() < tokenExpiry) return accessToken;
   return requestToken("none");
 }
 

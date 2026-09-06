@@ -1,5 +1,5 @@
 import type { AppState } from "../types/state";
-import { getAccessToken } from "./googleAuth";
+import { AuthExpiredError, getAccessToken, invalidateAccessToken } from "./googleAuth";
 
 const FILE_NAME = "zaminy-state.json";
 
@@ -8,13 +8,27 @@ export interface DriveFileRef {
   modifiedTime: string;
 }
 
-async function driveFetch(url: string, init: RequestInit = {}): Promise<Response> {
+async function driveFetch(url: string, init: RequestInit = {}, retried = false): Promise<Response> {
   const token = await getAccessToken();
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${token}`);
   const response = await fetch(url, { ...init, headers });
-  if (!response.ok) throw new Error(`Google Drive API: ${response.status}`);
-  return response;
+  if (response.ok) return response;
+
+  // 401 = Google не приймає токен (відкликано чи протух достроково — наш
+  // кеш цього не бачить). Раз скидаємо кеш, беремо свіжий токен і повторюємо;
+  // якщо і свіжий дає 401 — сесія справді мертва, потрібен видимий вхід.
+  if (response.status === 401) {
+    if (retried) throw new AuthExpiredError();
+    invalidateAccessToken();
+    try {
+      await getAccessToken(true);
+    } catch {
+      throw new AuthExpiredError();
+    }
+    return driveFetch(url, init, true);
+  }
+  throw new Error(`Google Drive API: ${response.status}`);
 }
 
 export async function findStateFile(): Promise<DriveFileRef | null> {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import type { AppState } from "../types/state";
 import {
+  AuthExpiredError,
   getAccessToken,
   isConfigured,
   signIn as googleSignIn,
@@ -56,7 +57,16 @@ export function useDriveSync(state: AppState, setState: Dispatch<SetStateAction<
       const uploaded = await uploadStateFile(fileId, stateRef.current);
       lastModifiedRef.current = uploaded.modifiedTime;
       setStatus("ok");
-    } catch {
+    } catch (error) {
+      // Сесія Google протухла — не глухий кут із повтором кожні 10 с, а чиста
+      // пропозиція увійти знову (кнопка "Увійти через Google").
+      if (error instanceof AuthExpiredError) {
+        fileIdRef.current = null;
+        lastModifiedRef.current = null;
+        setMessage("Сесія Google протухла — увійдіть знову");
+        setStatus("local");
+        return;
+      }
       setStatus("error");
       saveTimerRef.current = setTimeout(push, RETRY_MS);
     }
@@ -109,9 +119,10 @@ export function useDriveSync(state: AppState, setState: Dispatch<SetStateAction<
         await attachToDrive();
         if (cancelled) return;
         setStatus("ok");
-      } catch {
+      } catch (error) {
         if (cancelled) return;
         fileIdRef.current = null;
+        if (error instanceof AuthExpiredError) setMessage("Сесія Google протухла — увійдіть знову");
         setStatus("local");
       }
     })();
@@ -122,13 +133,19 @@ export function useDriveSync(state: AppState, setState: Dispatch<SetStateAction<
 
   const signIn = useCallback(async () => {
     setStatus("saving");
+    setMessage(null);
     try {
       await googleSignIn();
       await attachToDrive();
       setStatus("ok");
     } catch (error) {
-      setStatus("error");
       fileIdRef.current = null;
+      if (error instanceof AuthExpiredError) {
+        setMessage("Не вдалося підтвердити доступ до Google Drive — спробуйте ще раз");
+        setStatus("local");
+        return;
+      }
+      setStatus("error");
       throw error;
     }
   }, [attachToDrive]);
