@@ -12,9 +12,17 @@ export function useAppState() {
     });
   }, []);
 
+  // Застосувати знімок, підтягнутий із Drive, — БЕЗ перештамповування
+  // meta.updatedAt. Інакше щойно підтягнутий чужий стан позначився б як
+  // "створений зараз", pickNewer втратив би змогу порівняти справжній час
+  // авторства, і два активні пристрої пінг-понгали б записами.
+  const applyRemoteState = useCallback((remote: AppState) => {
+    setStateRaw(remote);
+  }, []);
+
   useEffect(() => {
     saveState(state);
   }, [state]);
 
-  return [state, setState] as const;
+  return [state, setState, applyRemoteState] as const;
 }

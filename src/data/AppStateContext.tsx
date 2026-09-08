@@ -9,9 +9,9 @@ const AppStateCtx = createContext<AppStateTuple | null>(null);
 const SyncCtx = createContext<SyncControls | null>(null);
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
-  const tuple = useLocalAppState();
-  const [state, setState] = tuple;
-  const sync = useDriveSync(state, setState);
+  const [state, setState, applyRemoteState] = useLocalAppState();
+  const sync = useDriveSync(state, applyRemoteState);
+  const tuple: AppStateTuple = [state, setState];
 
   return (
     <AppStateCtx.Provider value={tuple}>
