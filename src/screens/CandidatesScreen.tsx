@@ -13,7 +13,7 @@ import {
 } from "../data/actions";
 import type { NewSubstitutionInput } from "../data/actions";
 import { useAppState } from "../data/AppStateContext";
-import { weekdayName } from "../ranking/presence";
+import { toMinutes, weekdayName } from "../ranking/presence";
 import { TIERS, rankCandidates } from "../ranking/rank";
 import type { AttemptResult } from "../types/substitution";
 import { buildSubstitutionMessage } from "../whatsapp";
@@ -30,7 +30,13 @@ export function CandidatesScreen() {
 
   // Черга для опитування: термінові одразу, завчасні — тільки після розсилки ("в чаті").
   const queueSubstitutions = useMemo(
-    () => state.substitutions.filter((s) => s.status === "in-chat" || (s.status === "open" && s.mode === "urgent")),
+    () =>
+      state.substitutions
+        .filter((s) => s.status === "in-chat" || (s.status === "open" && s.mode === "urgent"))
+        .sort(
+          (a, b) =>
+            a.date.localeCompare(b.date) || toMinutes(a.start) - toMinutes(b.start) || toMinutes(a.end) - toMinutes(b.end)
+        ),
     [state.substitutions]
   );
 
