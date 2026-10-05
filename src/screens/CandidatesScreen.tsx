@@ -28,7 +28,7 @@ export function CandidatesScreen() {
     [state.substitutions]
   );
 
-  // Черга для опитування: термінові одразу, завчасні — тільки після розсилки ("в чаті").
+  // Черга для опитування: швидкі одразу, завчасні — тільки після розсилки ("в чаті").
   const queueSubstitutions = useMemo(
     () =>
       state.substitutions

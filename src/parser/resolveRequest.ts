@@ -75,7 +75,7 @@ export function findConflict(
   );
 }
 
-/** Дата = сьогодні → термінова, інакше завчасна. Лише дефолт для форми —
+/** Дата = сьогодні → швидка, інакше завчасна. Лише дефолт для форми —
  *  Kate завжди може перемкнути вручну. */
 export function suggestedMode(date: string, referenceDate: string): SubstitutionMode {
   return date === referenceDate ? "urgent" : "planned";

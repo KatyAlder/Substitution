@@ -16,7 +16,7 @@ interface Props {
 }
 
 const MODE_ITEMS: { value: SubstitutionMode; label: string }[] = [
-  { value: "urgent", label: "термінова" },
+  { value: "urgent", label: "швидка" },
   { value: "planned", label: "завчасна" },
 ];
 

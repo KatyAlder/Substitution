@@ -31,7 +31,7 @@ export function SlotPicker({ substitutions, teachers, selectedId, onSelect, onDe
               <span
                 className={`slot-picker__mode slot-picker__mode--${sub.status === "in-chat" ? "in-chat" : sub.mode}`}
               >
-                {sub.status === "in-chat" ? "в чаті" : sub.mode === "urgent" ? "термінова" : "завчасна"}
+                {sub.status === "in-chat" ? "в чаті" : sub.mode === "urgent" ? "швидка" : "завчасна"}
               </span>
               <span className="slot-picker__main">
                 {weekdayName(weekday)}, {sub.date} · {sub.start}–{sub.end} ·{" "}
